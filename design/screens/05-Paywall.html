@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mobile access required (modern)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A0A0A;}
+*{box-sizing:border-box;}
+button{font-family:inherit;}
+button:focus-visible,a:focus-visible{outline:2px solid #CBF21D;outline-offset:2px;}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;display:flex;flex-direction:column;background:#0A0A0A;color:#FAFAFA;font-family:'Geist',system-ui,sans-serif;overflow:hidden;">
+<dc-import name="MinStatusBar" hint-size="390px,47px"></dc-import>
+
+<header style="display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 16px 0 24px;">
+<div style="display:flex;align-items:center;gap:8px;"><img src="../assets/logo.png" alt="" style="width:24px;height:24px;object-fit:contain;display:block;"><span style="font-size:16px;font-weight:600;letter-spacing:-0.01em;">EliteFutBot</span></div>
+<a href="ModAuth.dc.html" style="height:36px;display:flex;align-items:center;padding:0 14px;border-radius:18px;background:#161616;color:#FAFAFA;text-decoration:none;font-size:13px;font-weight:500;">Sign out</a>
+</header>
+
+<main style="flex:1 1 0;display:flex;flex-direction:column;padding:16px 20px 0;">
+
+<div style="display:flex;flex-direction:column;gap:10px;padding:0 4px;">
+<span style="align-self:flex-start;display:flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:14px;background:#1F1A0C;font-size:12px;font-weight:500;color:#F5B841;"><span style="width:6px;height:6px;border-radius:3px;background:#F5B841;"></span>Web license only</span>
+<h1 style="margin:6px 0 0;font-size:34px;font-weight:700;line-height:38px;letter-spacing:-0.035em;">Take sniping mobile</h1>
+<p style="margin:0;font-size:15px;line-height:23px;color:#A1A1A1;">Add the Mobile add-on to your license to run EliteFutBot from your phone.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px;margin-top:24px;">
+<div style="display:flex;flex-direction:column;gap:14px;padding:16px;border-radius:22px;background:#CBF21D;color:#0A0A0A;">
+<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g fill="none" stroke="#0A0A0A" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="3"></rect><path d="M11 18.5h2"></path></g></svg>
+<span style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:15px;font-weight:600;">Snipe on the go</span><span style="font-size:12px;line-height:17px;color:#3A4510;">The engine runs on your phone</span></span>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding:16px;border-radius:22px;background:#141414;">
+<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g fill="none" stroke="#CBF21D" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></g></svg>
+<span style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:15px;font-weight:600;">Auto-listing</span><span style="font-size:12px;line-height:17px;color:#A1A1A1;">At FUTBIN / FUT.GG prices</span></span>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding:16px;border-radius:22px;background:#141414;">
+<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5L4.5 5.8v5.7c0 4.7 3.2 8.2 7.5 10 4.3-1.8 7.5-5.3 7.5-10V5.8z" fill="none" stroke="#CBF21D" stroke-width="1.9" stroke-linejoin="round"></path></svg>
+<span style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:15px;font-weight:600;">Safety built in</span><span style="font-size:12px;line-height:17px;color:#A1A1A1;">Limits and sleep breaks</span></span>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding:16px;border-radius:22px;background:#141414;">
+<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g fill="none" stroke="#CBF21D" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.6-4.5L4 8"></path><path d="M4 3v5h5"></path><path d="M4 13a8 8 0 0 0 14.6 4.5L20 16"></path><path d="M20 21v-5h-5"></path></g></svg>
+<span style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:15px;font-weight:600;">Always in sync</span><span style="font-size:12px;line-height:17px;color:#A1A1A1;">With your web dashboard</span></span>
+</div>
+</div>
+
+<div style="display:flex;align-items:center;gap:12px;margin-top:10px;min-height:60px;padding:0 6px 0 16px;border-radius:22px;background:#141414;">
+<span style="flex:1 1 0;display:flex;flex-direction:column;gap:2px;"><span style="font-size:14px;font-weight:500;">Already upgraded?</span><span role="status" style="font-size:12px;color:#A1A1A1;">{{statusText}}</span></span>
+<button type="button" onClick="{{refresh}}" disabled="{{checking}}" style="height:44px;padding:0 16px;border:0;border-radius:22px;background:#262626;color:#FAFAFA;cursor:pointer;font-size:13px;font-weight:500;">{{buttonText}}</button>
+</div>
+
+<div style="margin-top:auto;display:flex;flex-direction:column;gap:4px;">
+<a href="https://www.elitefutbot.com" style="height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 22px;border-radius:28px;background:#CBF21D;color:#0A0A0A;text-decoration:none;font-size:16px;font-weight:600;">Add Mobile on the web<span style="width:40px;height:40px;border-radius:20px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8" fill="none" stroke="#CBF21D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></a>
+<a href="https://discord.gg/Rkb9nF6WG6" style="height:44px;display:flex;align-items:center;justify-content:center;color:#A1A1A1;text-decoration:none;font-size:14px;font-weight:500;">Questions? Chat with support</a>
+</div>
+</main>
+
+<div style="height:34px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;flex-shrink:0;"><span style="width:134px;height:5px;border-radius:3px;background:#FAFAFA;"></span></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { checking: false, checked: false };
+  }
+  componentWillUnmount() { clearTimeout(this.t); }
+  renderVals() {
+    const s = this.state;
+    return {
+      checking: s.checking,
+      buttonText: s.checking ? 'Checking…' : 'Refresh',
+      statusText: s.checking ? 'Checking your license…' : s.checked ? 'Checked just now · still inactive' : 'Refresh to update your access',
+      refresh: () => {
+        this.setState({ checking: true });
+        this.t = setTimeout(() => this.setState({ checking: false, checked: true }), 1300);
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

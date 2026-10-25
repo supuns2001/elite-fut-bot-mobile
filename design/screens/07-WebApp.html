@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EA Web App with bot (minimal)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:#0F1318;color:#FAFAFA;font-family:'Geist',system-ui,sans-serif;">
+
+<div style="position:absolute;top:0;left:0;right:0;z-index:5;"><dc-import name="MinStatusBar-o3ji" bg="#0F1318" hint-size="390px,47px"></dc-import></div>
+
+<div aria-label="EA FC Web App" style="position:absolute;top:47px;left:0;right:0;bottom:84px;padding:68px 16px 0;display:flex;flex-direction:column;gap:10px;opacity:{{webOpacity}};transition:opacity .3s;">
+<span style="font-size:12px;color:#8B97A6;">Transfers / Search the Transfer Market</span>
+<div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:18px;font-weight:600;color:#DCE3EC;">Search Results</span><span style="font-size:12px;color:#8B97A6;">Page 1</span></div>
+<div style="display:flex;flex-direction:column;gap:6px;">
+<sc-for list="{{market}}" as="m" hint-placeholder-count="7">
+<div style="height:56px;display:flex;align-items:center;gap:12px;padding:0 14px 0 8px;border-radius:10px;background:#161C24;">
+<span style="width:36px;height:42px;border-radius:6px;background:#B8973E;color:#1A1405;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:14px;font-weight:600;line-height:14px;">91<span style="font-size:9px;">ST</span></span>
+<span style="flex:1 1 0;display:flex;flex-direction:column;min-width:0;"><span style="font-size:14px;font-weight:500;color:#DCE3EC;">Mbappé</span><span style="font-size:12px;color:#8B97A6;">Gold Rare · {{m.time}} left</span></span>
+<span style="font-size:14px;font-weight:500;color:#DCE3EC;font-variant-numeric:tabular-nums;">{{m.price}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="position:absolute;top:55px;left:12px;right:12px;height:48px;z-index:10;box-sizing:border-box;display:flex;align-items:center;gap:4px;padding:0 12px 0 2px;border-radius:14px;background:rgba(10,10,10,0.92);border:1px solid rgba(255,255,255,0.06);">
+<button type="button" aria-label="Reload Web App" onClick="{{reload}}" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:transparent;border:0;cursor:pointer;"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><g fill="none" stroke="#D4D4D4" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"></path><path d="M3 3v5h5"></path></g></svg></button>
+<span style="flex:1 1 0;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:{{barColor}};white-space:nowrap;font-variant-numeric:tabular-nums;"><span style="width:6px;height:6px;border-radius:3px;background:#CBF21D;"></span>{{barText}}</span>
+<span style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#F5B841;"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><g fill="none" stroke="#F5B841" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></g></svg>Awake</span>
+</div>
+
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}">
+<div role="status" style="position:absolute;top:114px;left:0;right:0;z-index:12;display:flex;justify-content:center;"><span style="display:flex;align-items:center;height:36px;padding:0 14px;border-radius:18px;background:#FAFAFA;color:#0A0A0A;font-size:13px;font-weight:500;">3 cards listed at FUTBIN +5%</span></div>
+</sc-if>
+
+<sc-if value="{{drawerClosed}}" hint-placeholder-val="{{true}}">
+<div style="position:absolute;right:16px;bottom:100px;z-index:10;display:flex;gap:8px;">
+<button type="button" onClick="{{listAll}}" disabled="{{listing}}" style="height:44px;padding:0 16px;border-radius:22px;background:#141414;border:1px solid #2A2A2A;color:#FAFAFA;cursor:pointer;font-family:inherit;font-size:14px;font-weight:500;">{{listText}}</button>
+<button type="button" onClick="{{openDrawer}}" style="height:44px;display:flex;align-items:center;gap:8px;padding:0 16px 0 12px;border:0;border-radius:22px;background:#CBF21D;color:#0A0A0A;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;"><img src="../assets/logo.png" alt="" style="width:18px;height:18px;object-fit:contain;">Controls</button>
+</div>
+</sc-if>
+
+<div style="position:absolute;left:0;right:0;bottom:0;z-index:8;"><dc-import name="MinTabBar-1qei" active="webapp" hint-size="390px,84px"></dc-import></div>
+
+<sc-if value="{{drawerOpen}}" hint-placeholder-val="{{false}}">
+<button type="button" aria-label="Close sniping controls" onClick="{{closeDrawer}}" style="position:absolute;top:0;left:0;width:390px;height:844px;z-index:20;border:0;padding:0;background:rgba(0,0,0,0.5);cursor:pointer;"></button>
+<section role="dialog" aria-modal="true" aria-labelledby="m-ctl-t" style="position:absolute;left:0;right:0;top:170px;bottom:0;z-index:21;display:flex;flex-direction:column;background:#111111;border-radius:20px 20px 0 0;">
+<div style="display:flex;justify-content:center;padding:8px 0 0;"><span style="width:36px;height:4px;border-radius:2px;background:#333333;"></span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px 4px 20px;">
+<h2 id="m-ctl-t" style="margin:0;font-size:17px;font-weight:600;">Sniping controls</h2>
+<div style="display:flex;align-items:center;gap:4px;">
+<span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:12px;color:{{loopColor}};">{{loopChip}}</span>
+<button type="button" aria-label="Close" onClick="{{closeDrawer}}" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:0;cursor:pointer;"><span style="width:30px;height:30px;border-radius:15px;background:#1F1F1F;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="#D4D4D4" stroke-width="2" stroke-linecap="round"></path></svg></span></button>
+</div>
+</div>
+
+<div style="flex:1 1 0;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:18px;padding:10px 20px 16px;">
+<div style="display:flex;flex-direction:column;gap:8px;">
+<label for="m-player" style="font-size:13px;font-weight:500;color:#A1A1A1;">Player</label>
+<input id="m-player" type="text" placeholder="Name or quality" value="{{player}}" onChange="{{setPlayer}}" style="height:48px;box-sizing:border-box;padding:0 14px;border-radius:12px;background:#1A1A1A;border:1px solid #1A1A1A;outline:none;color:#FAFAFA;font-family:inherit;font-size:16px;">
+</div>
+
+<div style="display:flex;flex-direction:column;gap:8px;">
+<label for="m-max" style="font-size:13px;font-weight:500;color:#A1A1A1;">Max buy now</label>
+<div style="height:48px;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:0 14px;border-radius:12px;background:#1A1A1A;border:1px solid {{priceBorder}};"><input id="m-max" type="text" inputmode="numeric" placeholder="15000" value="{{maxPrice}}" onChange="{{setMaxPrice}}" style="flex:1 1 0;min-width:0;height:100%;background:transparent;border:0;outline:none;color:#FAFAFA;font-family:inherit;font-size:16px;font-variant-numeric:tabular-nums;"><span style="font-size:13px;color:#808080;">coins</span></div>
+<sc-if value="{{needPrice}}" hint-placeholder-val="{{false}}"><span style="font-size:12px;color:#F5B841;">Enter a max price first.</span></sc-if>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:8px;">
+<span style="font-size:13px;font-weight:500;color:#A1A1A1;">Speed</span>
+<div role="radiogroup" aria-label="Speed" style="display:flex;gap:4px;padding:4px;border-radius:12px;background:#1A1A1A;">
+<sc-for list="{{presets}}" as="p" hint-placeholder-count="3">
+<button type="button" role="radio" aria-checked="{{p.on}}" onClick="{{p.pick}}" style="flex:1 1 0;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;border-radius:9px;background:{{p.bg}};cursor:pointer;font-family:inherit;"><span style="display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:{{p.fg}};"><span style="width:6px;height:6px;border-radius:3px;background:{{p.dot}};"></span>{{p.label}}</span><span style="font-size:11px;color:#808080;">{{p.rpm}}</span></button>
+</sc-for>
+</div>
+<span style="font-size:12px;line-height:18px;color:#A1A1A1;">{{presetHelp}}</span>
+</div>
+
+<div style="display:flex;align-items:center;gap:12px;">
+<span style="flex:1 1 0;display:flex;flex-direction:column;gap:2px;"><span style="font-size:15px;font-weight:500;">Auto-list won cards</span><span style="font-size:12px;color:#A1A1A1;">At FUTBIN + 5%</span></span>
+<button type="button" role="switch" aria-checked="{{autoList}}" aria-label="Auto-list won cards" onClick="{{toggleAutoList}}" style="width:52px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:0;padding:0;cursor:pointer;"><span style="width:44px;height:26px;box-sizing:border-box;border-radius:13px;background:{{alTrack}};display:flex;align-items:center;justify-content:{{alJustify}};padding:3px;"><span style="width:20px;height:20px;border-radius:10px;background:{{alKnob}};"></span></span></button>
+</div>
+
+<div role="status" style="display:flex;align-items:center;gap:8px;font-family:'Geist Mono',ui-monospace,monospace;font-size:12px;color:#A1A1A1;"><span style="width:6px;height:6px;border-radius:3px;flex-shrink:0;background:{{dotColor}};"></span>{{statusText}}</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:2px;padding:12px 20px 0;border-top:1px solid #1C1C1C;">
+<button type="button" onClick="{{toggleRun}}" style="height:52px;border:0;border-radius:12px;background:{{runBg}};color:#0A0A0A;cursor:pointer;font-family:inherit;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;">{{runText}}</button>
+<button type="button" onClick="{{openConsole}}" style="height:44px;background:transparent;border:0;color:#A1A1A1;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;">Activity log</button>
+</div>
+<div style="height:30px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;box-sizing:border-box;"><span style="width:134px;height:5px;border-radius:3px;background:#FAFAFA;"></span></div>
+</section>
+</sc-if>
+
+<sc-if value="{{consoleOpen}}" hint-placeholder-val="{{false}}">
+<div style="position:absolute;top:0;left:0;z-index:40;"><dc-import name="MinConsole-4x36" on-close="{{closeConsole}}" live="{{running}}" standalone="{{no}}" hint-size="390px,844px"></dc-import></div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"drawerOpen":{"editor":"boolean","default":false},"running":{"editor":"boolean","default":false},"startSeconds":{"editor":null},"startLoops":{"editor":null},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const run = !!props.running;
+    this.state = {
+      drawer: !!props.drawerOpen,
+      running: run,
+      seconds: props.startSeconds ?? 0,
+      loops: props.startLoops ?? 0,
+      preset: 'safe',
+      autoList: true,
+      player: run ? 'Mbappé' : '',
+      maxPrice: run ? '15000' : '',
+      needPrice: false,
+      consoleOpen: false,
+      reloading: false,
+      listing: false,
+      toast: false,
+    };
+  }
+  componentDidMount() { if (this.state.running) this.startTimer(); }
+  componentWillUnmount() { this.stopTimer(); clearTimeout(this.t1); clearTimeout(this.t2); clearTimeout(this.t3); }
+  startTimer() {
+    this.stopTimer();
+    this.iv = setInterval(() => this.setState((st) => {
+      const sec = st.seconds + 1;
+      return { seconds: sec, loops: sec % 4 === 0 ? st.loops + 1 : st.loops };
+    }), 1000);
+  }
+  stopTimer() { if (this.iv) { clearInterval(this.iv); this.iv = null; } }
+  renderVals() {
+    const s = this.state;
+    const mm = String(Math.floor(s.seconds / 60)).padStart(2, '0');
+    const ss = String(s.seconds % 60).padStart(2, '0');
+    const P = [
+      ['safe', 'Safe', '4 rpm', '#CBF21D', '4 searches a minute. Recommended for daily use.'],
+      ['caution', 'Caution', '6 rpm', '#F5B841', '6 searches a minute. Take a break every 15 min.'],
+      ['risky', 'Risky', '10 rpm', '#FF8A80', '10 searches a minute. Short sessions only.'],
+    ];
+    const cur = P.find((p) => p[0] === s.preset);
+    const markets = [['16,750', '58m'], ['17,000', '57m'], ['17,250', '44m'], ['17,500', '31m'], ['17,750', '12m'], ['18,000', '6m'], ['18,250', '3m']];
+    return {
+      market: markets.map((m) => ({ price: m[0], time: m[1] })),
+      webOpacity: s.reloading ? 0.3 : 1,
+      reload: () => {
+        this.setState({ reloading: true });
+        this.t1 = setTimeout(() => this.setState({ reloading: false }), 1100);
+      },
+      barText: s.running ? 'Running · ' + s.loops + ' loops' : 'Bot ready',
+      barColor: s.running ? '#CBF21D' : '#FAFAFA',
+      running: s.running,
+      drawerOpen: s.drawer,
+      drawerClosed: !s.drawer,
+      openDrawer: () => this.setState({ drawer: true }),
+      closeDrawer: () => this.setState({ drawer: false }),
+      listing: s.listing,
+      listText: s.listing ? 'Listing…' : 'List all',
+      listAll: () => {
+        this.setState({ listing: true });
+        this.t2 = setTimeout(() => {
+          this.setState({ listing: false, toast: true });
+          this.t3 = setTimeout(() => this.setState({ toast: false }), 2400);
+        }, 1200);
+      },
+      toast: s.toast,
+      loopChip: s.running ? 'Loop ' + s.loops : 'Idle',
+      loopColor: s.running ? '#CBF21D' : '#808080',
+      player: s.player,
+      setPlayer: (e) => this.setState({ player: e.target.value }),
+      maxPrice: s.maxPrice,
+      setMaxPrice: (e) => this.setState({ maxPrice: e.target.value.replace(/[^0-9]/g, ''), needPrice: false }),
+      needPrice: s.needPrice,
+      priceBorder: s.needPrice ? '#F5B841' : '#1A1A1A',
+      presets: P.map((p) => {
+        const on = s.preset === p[0];
+        return { label: p[1], rpm: p[2], dot: p[3], on, bg: on ? '#2A2A2A' : 'transparent', fg: on ? '#FAFAFA' : '#A1A1A1', pick: () => this.setState({ preset: p[0] }) };
+      }),
+      presetHelp: cur[4],
+      autoList: s.autoList,
+      toggleAutoList: () => this.setState({ autoList: !s.autoList }),
+      alTrack: s.autoList ? '#CBF21D' : '#2A2A2A',
+      alJustify: s.autoList ? 'flex-end' : 'flex-start',
+      alKnob: s.autoList ? '#0A0A0A' : '#808080',
+      statusText: s.running ? 'Searching market · loop ' + s.loops : 'Idle',
+      dotColor: s.running ? '#CBF21D' : '#4A4A4A',
+      runBg: s.running ? '#FF8A80' : '#CBF21D',
+      runText: s.running ? 'Stop · ' + mm + ':' + ss : 'Start sniping',
+      toggleRun: () => {
+        if (s.running) { this.stopTimer(); this.setState({ running: false }); return; }
+        if (!s.maxPrice) { this.setState({ needPrice: true }); return; }
+        this.setState({ running: true, seconds: 0, loops: 1 });
+        this.startTimer();
+      },
+      consoleOpen: s.consoleOpen,
+      openConsole: () => this.setState({ consoleOpen: true }),
+      closeConsole: () => this.setState({ consoleOpen: false }),
+      no: false,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Splash (modern)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A0A0A;}
+*{box-sizing:border-box;}
+a:focus-visible{outline:2px solid #CBF21D;outline-offset:-4px;}
+@keyframes sp-pop{0%{opacity:0;transform:scale(.7)}60%{opacity:1;transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+@keyframes sp-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes sp-ring{0%{opacity:.5;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+@keyframes sp-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: no-preference){
+.sp-pop{animation:sp-pop .7s cubic-bezier(.2,.8,.2,1) both}
+.sp-up{animation:sp-up .6s .35s ease-out both}
+.sp-ring{animation:sp-ring 2s .6s ease-out infinite}
+.sp-fade{animation:sp-fade .4s ease-out both}
+}
+</style>
+</helmet>
+<a href="ModIntro.dc.html" aria-label="EliteFutBot. Continue" style="width:390px;height:844px;position:relative;display:flex;flex-direction:column;background:#0A0A0A;color:#FAFAFA;font-family:'Geist',system-ui,sans-serif;text-decoration:none;overflow:hidden;">
+<dc-import name="MinStatusBar" hint-size="390px,47px"></dc-import>
+
+<div style="flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;">
+<div style="position:relative;width:104px;height:104px;">
+<span class="sp-ring" aria-hidden="true" style="position:absolute;top:0;left:0;width:104px;height:104px;border-radius:34px;border:2px solid #CBF21D;"></span>
+<span class="sp-pop" style="position:absolute;top:0;left:0;width:104px;height:104px;border-radius:34px;background:#CBF21D;display:flex;align-items:center;justify-content:center;"><img src="../assets/logo.png" alt="" style="width:56px;height:56px;object-fit:contain;display:block;filter:brightness(0);"></span>
+</div>
+<div class="sp-up" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+<span style="font-size:30px;font-weight:700;letter-spacing:-0.035em;">EliteFutBot</span>
+<span style="font-size:14px;color:#A1A1A1;">FUT sniping, on autopilot</span>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:0 0 40px;height:110px;justify-content:flex-end;">
+<sc-if value="{{loading}}" hint-placeholder-val="{{true}}">
+<div role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{pct}}" style="width:120px;height:4px;border-radius:2px;background:#1F1F1F;overflow:hidden;"><span style="display:block;width:{{pct}}%;height:100%;border-radius:2px;background:#CBF21D;transition:width .15s linear;"></span></div>
+<span style="font-family:'Geist Mono',ui-monospace,monospace;font-size:11px;color:#808080;">{{stage}}</span>
+</sc-if>
+<sc-if value="{{ready}}" hint-placeholder-val="{{false}}">
+<span class="sp-fade" style="height:44px;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;background:#161616;font-size:14px;font-weight:500;color:#FAFAFA;">Tap to continue<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="#CBF21D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+</sc-if>
+</div>
+
+<div style="height:34px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;flex-shrink:0;"><span style="width:134px;height:5px;border-radius:3px;background:#FAFAFA;"></span></div>
+</a>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pct: 0 };
+  }
+  componentDidMount() {
+    this.iv = setInterval(() => this.setState((s) => {
+      const pct = Math.min(100, s.pct + 4);
+      if (pct >= 100) clearInterval(this.iv);
+      return { pct };
+    }), 90);
+  }
+  componentWillUnmount() { clearInterval(this.iv); }
+  renderVals() {
+    const p = this.state.pct;
+    return {
+      pct: p,
+      loading: p < 100,
+      ready: p >= 100,
+      stage: p < 40 ? 'Checking license…' : p < 80 ? 'Syncing settings…' : 'Almost ready…',
+    };
+  }
+}
+</script>
+</body>
+</html>

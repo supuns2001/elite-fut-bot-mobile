@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Activity log (minimal)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:{{rootBg}};color:#FAFAFA;font-family:'Geist',system-ui,sans-serif;">
+<button type="button" aria-label="Close log" onClick="{{close}}" style="position:absolute;top:0;left:0;width:390px;height:844px;border:0;padding:0;background:rgba(0,0,0,0.6);cursor:pointer;"></button>
+
+<section role="dialog" aria-modal="true" aria-labelledby="m-log-t" style="position:absolute;left:0;right:0;top:64px;bottom:0;display:flex;flex-direction:column;background:#111111;border-radius:20px 20px 0 0;">
+<div style="display:flex;justify-content:center;padding:8px 0 0;"><span style="width:36px;height:4px;border-radius:2px;background:#333333;"></span></div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px 8px 20px;">
+<div style="display:flex;align-items:center;gap:10px;">
+<h2 id="m-log-t" style="margin:0;font-size:17px;font-weight:600;">Activity log</h2>
+<sc-if value="{{live}}" hint-placeholder-val="{{false}}"><span style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#CBF21D;"><span style="width:6px;height:6px;border-radius:3px;background:#CBF21D;"></span>Live</span></sc-if>
+</div>
+<div style="display:flex;align-items:center;">
+<button type="button" onClick="{{clear}}" style="height:44px;padding:0 10px;background:transparent;border:0;color:#A1A1A1;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;">Clear</button>
+<button type="button" aria-label="Close" onClick="{{close}}" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:0;cursor:pointer;"><span style="width:30px;height:30px;border-radius:15px;background:#1F1F1F;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="#D4D4D4" stroke-width="2" stroke-linecap="round"></path></svg></span></button>
+</div>
+</div>
+
+<div role="log" aria-live="polite" style="flex:1 1 0;min-height:0;overflow-y:auto;padding:4px 20px 12px;display:flex;flex-direction:column;font-family:'Geist Mono',ui-monospace,Menlo,monospace;font-size:12px;line-height:18px;">
+<sc-for list="{{logs}}" as="l" hint-placeholder-count="12">
+<div style="display:flex;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid #1A1A1A;"><span style="color:#808080;flex-shrink:0;">{{l.time}}</span><span style="width:56px;flex-shrink:0;color:{{l.color}};">{{l.tag}}</span><span style="flex:1 1 0;min-width:0;color:#D4D4D4;">{{l.msg}}</span></div>
+</sc-for>
+<sc-if value="{{empty}}" hint-placeholder-val="{{false}}"><div style="flex:1 1 0;display:flex;align-items:center;justify-content:center;color:#808080;font-family:'Geist',system-ui,sans-serif;font-size:14px;">No events yet.</div></sc-if>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px 0 20px;border-top:1px solid #1C1C1C;">
+<span style="font-size:13px;color:#A1A1A1;">{{count}} events · Auto-scroll</span>
+<button type="button" role="switch" aria-checked="{{auto}}" aria-label="Auto-scroll" onClick="{{toggleAuto}}" style="width:52px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:0;cursor:pointer;padding:0;"><span style="width:40px;height:24px;border-radius:12px;background:{{autoTrack}};display:flex;align-items:center;justify-content:{{autoJustify}};padding:3px;box-sizing:border-box;"><span style="width:18px;height:18px;border-radius:9px;background:{{autoKnob}};"></span></span></button>
+</div>
+<div style="height:30px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;box-sizing:border-box;"><span style="width:134px;height:5px;border-radius:3px;background:#FAFAFA;"></span></div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"onClose":{"editor":null},"live":{"editor":"boolean","default":false},"standalone":{"editor":null},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const C = { INFO: '#808080', SEARCH: '#7CC4FF', BOUGHT: '#CBF21D', LISTED: '#F5B841', PAUSE: '#FF8A80' };
+    const rows = [
+      ['09:41:02', 'INFO', 'Web App hook ready'],
+      ['09:41:02', 'INFO', 'Screen keep-awake on'],
+      ['09:41:03', 'SEARCH', 'Mbappé · max 15,000'],
+      ['09:41:04', 'INFO', 'No match'],
+      ['09:41:19', 'SEARCH', 'Mbappé · max 15,000'],
+      ['09:41:20', 'INFO', '3 results, cheapest 16,750'],
+      ['09:41:34', 'SEARCH', 'Mbappé · max 15,000'],
+      ['09:41:35', 'BOUGHT', 'Card bought for 14,250'],
+      ['09:41:37', 'LISTED', 'Listed at 18,500 (+2,825)'],
+      ['09:41:49', 'SEARCH', 'Mbappé · max 15,000'],
+      ['09:41:50', 'INFO', 'No match'],
+      ['09:42:04', 'PAUSE', 'Human pause · 11s'],
+      ['09:42:16', 'SEARCH', 'Mbappé · max 15,000'],
+      ['09:42:17', 'INFO', 'No match'],
+    ];
+    this.state = { logs: rows.map((r) => ({ time: r[0], tag: r[1], msg: r[2], color: C[r[1]] })), count: 38, auto: true };
+  }
+  renderVals() {
+    const s = this.state;
+    const standalone = this.props.standalone ?? true;
+    return {
+      rootBg: standalone ? '#0A0A0A' : 'transparent',
+      live: this.props.live ?? false,
+      logs: s.logs,
+      empty: s.logs.length === 0,
+      count: s.count,
+      clear: () => this.setState({ logs: [], count: 0 }),
+      close: () => { if (this.props.onClose) this.props.onClose(); },
+      auto: s.auto,
+      autoTrack: s.auto ? '#CBF21D' : '#2A2A2A',
+      autoJustify: s.auto ? 'flex-end' : 'flex-start',
+      autoKnob: s.auto ? '#0A0A0A' : '#808080',
+      toggleAuto: () => this.setState({ auto: !s.auto }),
+    };
+  }
+}
+</script>
+</body>
+</html>

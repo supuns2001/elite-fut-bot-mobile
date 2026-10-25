@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home (modern)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A0A0A;}
+*{box-sizing:border-box;}
+button{font-family:inherit;}
+button:focus-visible,a:focus-visible{outline:2px solid #CBF21D;outline-offset:2px;}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;display:flex;flex-direction:column;background:#0A0A0A;color:#FAFAFA;font-family:'Geist',system-ui,sans-serif;overflow:hidden;">
+<dc-import name="MinStatusBar" hint-size="390px,47px"></dc-import>
+
+<main style="flex:1 1 0;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding:8px 16px 20px;">
+
+<header style="display:flex;align-items:center;gap:12px;padding:0 4px 6px;">
+<span aria-hidden="true" style="width:44px;height:44px;border-radius:22px;background:#161616;border:1px solid #262626;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#CBF21D;flex-shrink:0;">E</span>
+<div style="flex:1 1 0;display:flex;flex-direction:column;min-width:0;">
+<span style="font-size:13px;color:#A1A1A1;">Welcome back</span>
+<span style="font-size:18px;font-weight:700;letter-spacing:-0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Epic_Sniper281</span>
+</div>
+<span style="display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:16px;background:{{planBg}};font-size:12px;font-weight:500;color:{{planFg}};flex-shrink:0;"><span style="width:6px;height:6px;border-radius:3px;background:{{planFg}};"></span>{{planText}}</span>
+</header>
+
+<section style="display:flex;flex-direction:column;padding:22px;border-radius:28px;background:#CBF21D;color:#0A0A0A;">
+<div style="display:flex;gap:6px;">
+<span style="display:flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:14px;background:#0A0A0A;color:#CBF21D;font-size:12px;font-weight:500;"><span style="width:6px;height:6px;border-radius:3px;background:#CBF21D;"></span>Bot ready</span>
+<span style="display:flex;align-items:center;gap:5px;height:28px;padding:0 12px;border-radius:14px;background:rgba(10,10,10,0.1);font-size:12px;font-weight:500;color:#1F2606;"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M12 2.5L4.5 5.8v5.7c0 4.7 3.2 8.2 7.5 10 4.3-1.8 7.5-5.3 7.5-10V5.8z" fill="none" stroke="#1F2606" stroke-width="2.2" stroke-linejoin="round"></path></svg>Safe mode</span>
+</div>
+<h1 style="margin:22px 0 0;font-size:36px;font-weight:700;line-height:38px;letter-spacing:-0.04em;">Ready to snipe?</h1>
+<p style="margin:8px 0 22px;font-size:14px;line-height:21px;color:#2F3A08;">Open the EA Web App and start your session.</p>
+<a href="MinWebApp.dc.html" style="height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 22px;border-radius:28px;background:#0A0A0A;color:#FAFAFA;text-decoration:none;font-size:16px;font-weight:600;">Open EA Web App<span style="width:40px;height:40px;border-radius:20px;background:#CBF21D;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="#0A0A0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></a>
+</section>
+
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding:10px 4px 0;"><h2 style="margin:0;font-size:18px;font-weight:700;letter-spacing:-0.02em;">Today</h2><span style="font-size:13px;color:#808080;">Since midnight</span></div>
+
+<section style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px;">
+<div style="grid-row:span 2;display:flex;flex-direction:column;padding:16px;border-radius:24px;background:#141414;">
+<span style="font-size:13px;color:#A1A1A1;">Est. profit</span>
+<span style="font-size:30px;font-weight:700;letter-spacing:-0.04em;color:#CBF21D;font-variant-numeric:tabular-nums;">+38.2K</span>
+<div aria-hidden="true" style="margin-top:auto;height:72px;display:flex;align-items:flex-end;gap:5px;">
+<span style="flex:1 1 0;height:30%;border-radius:4px;background:#262626;"></span>
+<span style="flex:1 1 0;height:45%;border-radius:4px;background:#262626;"></span>
+<span style="flex:1 1 0;height:38%;border-radius:4px;background:#262626;"></span>
+<span style="flex:1 1 0;height:60%;border-radius:4px;background:#262626;"></span>
+<span style="flex:1 1 0;height:55%;border-radius:4px;background:#262626;"></span>
+<span style="flex:1 1 0;height:78%;border-radius:4px;background:#262626;"></span>
+<span style="flex:1 1 0;height:100%;border-radius:4px;background:#CBF21D;"></span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:24px;background:#141414;">
+<span style="width:32px;height:32px;border-radius:11px;background:#222222;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g fill="none" stroke="#FAFAFA" stroke-width="2" stroke-linejoin="round"><rect x="7" y="3" width="12" height="16" rx="2.5"></rect><path d="M4.5 6.5v12A2.5 2.5 0 0 0 7 21h9"></path></g></svg></span>
+<span style="display:flex;flex-direction:column;"><span style="font-size:22px;font-weight:700;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;">18</span><span style="font-size:12px;color:#A1A1A1;">Cards bought</span></span>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:24px;background:#141414;">
+<span style="width:32px;height:32px;border-radius:11px;background:#222222;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g fill="none" stroke="#FAFAFA" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M14.8 9.2A4 4 0 1 0 14.8 14.8"></path></g></svg></span>
+<span style="display:flex;flex-direction:column;"><span style="font-size:22px;font-weight:700;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;">142.5K</span><span style="font-size:12px;color:#A1A1A1;">Coins spent</span></span>
+</div>
+</section>
+
+<section style="display:flex;align-items:center;gap:14px;min-height:72px;padding:0 8px 0 16px;border-radius:24px;background:#141414;">
+<span aria-hidden="true" style="display:flex;align-items:flex-end;gap:3px;height:20px;flex-shrink:0;"><span style="width:4px;height:6px;border-radius:2px;background:{{bar1}};"></span><span style="width:4px;height:11px;border-radius:2px;background:{{bar2}};"></span><span style="width:4px;height:16px;border-radius:2px;background:{{bar3}};"></span><span style="width:4px;height:20px;border-radius:2px;background:{{bar4}};"></span></span>
+<span style="flex:1 1 0;display:flex;flex-direction:column;gap:2px;"><span style="font-size:15px;font-weight:600;">EA server · {{pingText}}</span><span role="status" style="font-size:13px;color:{{pingColor}};">{{pingLabel}}</span></span>
+<button type="button" onClick="{{retest}}" style="height:44px;padding:0 18px;border:0;border-radius:22px;background:#262626;color:#FAFAFA;cursor:pointer;font-size:13px;font-weight:500;">{{testText}}</button>
+</section>
+
+</main>
+
+<dc-import name="MinTabBar" active="home" hint-size="390px,84px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"plan":{"editor":"enum","options":["mobile","trial"],"default":"mobile"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { ping: 38, testing: false, seq: 0 };
+  }
+  componentWillUnmount() { clearTimeout(this.t); }
+  renderVals() {
+    const s = this.state;
+    const plan = this.props.plan ?? 'mobile';
+    const p = s.ping;
+    const st = s.testing ? ['Testing…', '#A1A1A1', 0] : p < 40 ? ['Great for sniping', '#CBF21D', 4] : p <= 90 ? ['Stable', '#F5B841', 3] : ['Slow connection', '#FF8A80', 1];
+    const samples = [44, 31, 67, 36, 112, 38];
+    const bar = (n) => (n <= st[2] ? st[1] : '#333333');
+    return {
+      planText: plan === 'mobile' ? 'Pro · Mobile' : 'Trial · 18h',
+      planFg: plan === 'mobile' ? '#CBF21D' : '#F5B841',
+      planBg: plan === 'mobile' ? '#161C05' : '#1F1A0C',
+      pingText: s.testing ? '… ms' : p + ' ms',
+      pingLabel: st[0],
+      pingColor: st[1],
+      bar1: bar(1), bar2: bar(2), bar3: bar(3), bar4: bar(4),
+      testText: s.testing ? 'Testing…' : 'Test',
+      retest: () => {
+        if (s.testing) return;
+        this.setState({ testing: true });
+        this.t = setTimeout(() => this.setState({ testing: false, ping: samples[s.seq % samples.length], seq: s.seq + 1 }), 900);
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

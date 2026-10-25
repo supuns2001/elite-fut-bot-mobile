@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tab bar (minimal)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<nav aria-label="Main" style="width:390px;height:84px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;padding:2px 16px 8px;background:{{bg}};font-family:'Geist',system-ui,sans-serif;">
+<div style="height:60px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;padding:0 6px;border-radius:30px;background:#161616;border:1px solid #242424;">
+
+<a href="MinHome.dc.html" aria-label="Home" aria-current="{{homeCurrent}}" style="height:48px;min-width:48px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 {{homePad}}px;border-radius:24px;background:{{homeBg}};text-decoration:none;transition:background .2s,padding .2s;">
+<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 10.5L12 4l8 6.5V20h-5v-5.5H9V20H4z" fill="none" stroke="{{homeIcon}}" stroke-width="1.9" stroke-linejoin="round"></path></svg>
+<sc-if value="{{homeOn}}" hint-placeholder-val="{{true}}"><span style="font-size:14px;font-weight:600;color:#0A0A0A;">Home</span></sc-if>
+</a>
+
+<a href="MinWebApp.dc.html" aria-label="Web App" aria-current="{{webCurrent}}" style="height:48px;min-width:48px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 {{webPad}}px;border-radius:24px;background:{{webBg}};text-decoration:none;transition:background .2s,padding .2s;">
+<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g fill="none" stroke="{{webIcon}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="7.5" width="14" height="11.5" rx="3"></rect><path d="M12 3.5v4M9.5 12.5v1M14.5 12.5v1"></path></g></svg>
+<sc-if value="{{webOn}}" hint-placeholder-val="{{false}}"><span style="font-size:14px;font-weight:600;color:#0A0A0A;white-space:nowrap;">Web App</span></sc-if>
+</a>
+
+<a href="MinSupport.dc.html" aria-label="Help" aria-current="{{supportCurrent}}" style="height:48px;min-width:48px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 {{supportPad}}px;border-radius:24px;background:{{supportBg}};text-decoration:none;transition:background .2s,padding .2s;">
+<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g fill="none" stroke="{{supportIcon}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M9.6 9.5a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.1-2.4 3.4M12 16.8v.1"></path></g></svg>
+<sc-if value="{{supportOn}}" hint-placeholder-val="{{false}}"><span style="font-size:14px;font-weight:600;color:#0A0A0A;">Help</span></sc-if>
+</a>
+
+<a href="MinProfile.dc.html" aria-label="Profile" aria-current="{{profileCurrent}}" style="height:48px;min-width:48px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 {{profilePad}}px;border-radius:24px;background:{{profileBg}};text-decoration:none;transition:background .2s,padding .2s;">
+<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g fill="none" stroke="{{profileIcon}}" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.75"></circle><path d="M5 20c.9-3.6 3.6-5.5 7-5.5s6.1 1.9 7 5.5"></path></g></svg>
+<sc-if value="{{profileOn}}" hint-placeholder-val="{{false}}"><span style="font-size:14px;font-weight:600;color:#0A0A0A;">Profile</span></sc-if>
+</a>
+
+</div>
+<div style="display:flex;justify-content:center;"><span style="width:134px;height:5px;border-radius:3px;background:#FAFAFA;"></span></div>
+</nav>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","options":["home","webapp","support","profile"],"default":"home"},"bg":{"editor":"color","default":"#0A0A0A"},"$preview":{"width":390,"height":84}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const active = this.props.active ?? 'home';
+    const v = { bg: this.props.bg ?? '#0A0A0A' };
+    [['home', 'home'], ['web', 'webapp'], ['support', 'support'], ['profile', 'profile']].forEach(([k, id]) => {
+      const on = active === id;
+      v[k + 'On'] = on;
+      v[k + 'Current'] = on ? 'page' : undefined;
+      v[k + 'Bg'] = on ? '#CBF21D' : 'transparent';
+      v[k + 'Icon'] = on ? '#0A0A0A' : '#8A8A8A';
+      v[k + 'Pad'] = on ? 18 : 0;
+    });
+    return v;
+  }
+}
+</script>
+</body>
+</html>

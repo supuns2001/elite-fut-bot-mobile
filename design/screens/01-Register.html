@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Create account (modern)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A0A0A;}
+*{box-sizing:border-box;}
+a{color:#FAFAFA;}
+button,input{font-family:inherit;}
+input::placeholder{color:#5E5E5E;}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #CBF21D;outline-offset:2px;}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;display:flex;flex-direction:column;background:#0A0A0A;color:#FAFAFA;font-family:'Geist',system-ui,sans-serif;overflow:hidden;">
+<dc-import name="MinStatusBar-l8wk" hint-size="390px,47px"></dc-import>
+
+<section style="display:flex;flex-direction:column;padding:20px 24px 24px;">
+<a href="ModAuth.dc.html" aria-label="Back" style="width:44px;height:44px;margin-left:-6px;display:flex;align-items:center;justify-content:center;border-radius:22px;background:#161616;"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#FAFAFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+<h1 style="margin:22px 0 0;font-size:34px;font-weight:700;line-height:38px;letter-spacing:-0.035em;">Create account</h1>
+<p style="margin:8px 0 0;font-size:15px;color:#A1A1A1;line-height:22px;">Start your free 24h trial. No card needed.</p>
+</section>
+
+<section style="flex:1 1 0;display:flex;flex-direction:column;gap:10px;padding:22px 20px 0;border-radius:32px 32px 0 0;background:#141414;">
+
+<div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px;">
+<label for="r-first" style="display:flex;flex-direction:column;justify-content:center;gap:2px;height:64px;padding:0 16px;border-radius:18px;background:#1E1E1E;border:1px solid {{firstBorder}};cursor:text;">
+<span style="font-size:12px;color:#8A8A8A;">First name</span>
+<input id="r-first" type="text" autocomplete="given-name" placeholder="Alex" value="{{first}}" onChange="{{setFirst}}" style="width:100%;height:24px;padding:0;background:transparent;border:0;outline:none;color:#FAFAFA;font-size:16px;">
+</label>
+<label for="r-last" style="display:flex;flex-direction:column;justify-content:center;gap:2px;height:64px;padding:0 16px;border-radius:18px;background:#1E1E1E;border:1px solid {{lastBorder}};cursor:text;">
+<span style="font-size:12px;color:#8A8A8A;">Last name</span>
+<input id="r-last" type="text" autocomplete="family-name" placeholder="Silva" value="{{last}}" onChange="{{setLast}}" style="width:100%;height:24px;padding:0;background:transparent;border:0;outline:none;color:#FAFAFA;font-size:16px;">
+</label>
+</div>
+
+<label for="r-email" style="display:flex;flex-direction:column;justify-content:center;gap:2px;height:64px;padding:0 18px;border-radius:18px;background:#1E1E1E;border:1px solid {{emailBorder}};cursor:text;">
+<span style="font-size:12px;color:#8A8A8A;">Email</span>
+<input id="r-email" type="email" autocomplete="email" placeholder="you@example.com" value="{{email}}" onChange="{{setEmail}}" style="height:24px;padding:0;background:transparent;border:0;outline:none;color:#FAFAFA;font-size:16px;">
+</label>
+
+<div style="display:flex;flex-direction:column;gap:8px;">
+<div style="display:flex;align-items:center;height:64px;padding:0 6px 0 18px;border-radius:18px;background:#1E1E1E;border:1px solid {{passBorder}};">
+<label for="r-pass" style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:2px;cursor:text;">
+<span style="font-size:12px;color:#8A8A8A;">Password</span>
+<input id="r-pass" type="{{pwdType}}" autocomplete="new-password" placeholder="8+ characters" value="{{password}}" onChange="{{setPassword}}" style="height:24px;padding:0;background:transparent;border:0;outline:none;color:#FAFAFA;font-size:16px;">
+</label>
+<button type="button" aria-label="{{eyeLabel}}" onClick="{{toggleEye}}" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:14px;cursor:pointer;"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><g fill="none" stroke="#A1A1A1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="3"></circle></g></svg></button>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:0 6px;">
+<div aria-hidden="true" style="flex:1 1 0;display:flex;gap:4px;"><span style="flex:1 1 0;height:4px;border-radius:2px;background:{{s1}};"></span><span style="flex:1 1 0;height:4px;border-radius:2px;background:{{s2}};"></span><span style="flex:1 1 0;height:4px;border-radius:2px;background:{{s3}};"></span></div>
+<span style="font-size:12px;color:{{strengthColor}};min-width:64px;text-align:right;">{{strengthText}}</span>
+</div>
+</div>
+
+<div style="display:flex;align-items:center;height:64px;padding:0 14px 0 18px;border-radius:18px;background:#1E1E1E;border:1px dashed {{refBorder}};">
+<label for="r-ref" style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:2px;cursor:text;">
+<span style="font-size:12px;color:#8A8A8A;">Referral ID <span style="color:#5E5E5E;">· optional</span></span>
+<input id="r-ref" type="text" autocapitalize="characters" placeholder="e.g. ELITE24" value="{{ref}}" onChange="{{setRef}}" style="height:24px;padding:0;background:transparent;border:0;outline:none;color:#FAFAFA;font-family:'Geist Mono',ui-monospace,monospace;font-size:16px;letter-spacing:0.04em;">
+</label>
+<sc-if value="{{refOk}}" hint-placeholder-val="{{false}}"><span style="display:flex;align-items:center;gap:4px;height:28px;padding:0 10px;border-radius:14px;background:#161C05;font-size:12px;font-weight:500;color:#CBF21D;"><svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#CBF21D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Added</span></sc-if>
+</div>
+
+<sc-if value="{{error}}" hint-placeholder-val="{{false}}"><span role="alert" style="padding:0 6px;font-size:13px;color:#FF8A80;">{{errorText}}</span></sc-if>
+
+<button type="button" onClick="{{submit}}" disabled="{{loading}}" style="height:56px;margin-top:4px;border:0;border-radius:28px;background:#CBF21D;color:#0A0A0A;cursor:pointer;font-size:16px;font-weight:600;">{{buttonText}}</button>
+
+<p style="margin:0;text-align:center;font-size:12px;line-height:18px;color:#808080;">By creating an account you agree to our <a href="https://www.elitefutbot.com/terms" style="color:#A1A1A1;">Terms</a> and <a href="https://www.elitefutbot.com/privacy" style="color:#A1A1A1;">Privacy Policy</a>.</p>
+
+<p style="margin:auto 0 0;text-align:center;font-size:14px;color:#A1A1A1;">Already have an account? <a href="ModAuth.dc.html" style="color:#CBF21D;font-weight:500;text-decoration:none;">Sign in</a></p>
+<div style="height:30px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;flex-shrink:0;"><span style="width:134px;height:5px;border-radius:3px;background:#FAFAFA;"></span></div>
+</section>
+
+<sc-if value="{{done}}" hint-placeholder-val="{{false}}">
+<div style="position:absolute;top:0;left:0;width:390px;height:844px;z-index:20;background:rgba(0,0,0,0.6);"></div>
+<div role="alertdialog" aria-labelledby="r-done-t" style="position:absolute;left:8px;right:8px;bottom:8px;z-index:21;background:#1A1A1A;border-radius:28px;padding:28px 24px 24px;display:flex;flex-direction:column;gap:8px;">
+<span style="width:48px;height:48px;border-radius:16px;background:#CBF21D;display:flex;align-items:center;justify-content:center;margin-bottom:8px;"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#0A0A0A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+<h2 id="r-done-t" style="margin:0;font-size:22px;font-weight:700;letter-spacing:-0.02em;">You're in, {{firstName}}</h2>
+<p style="margin:0;font-size:14px;line-height:21px;color:#A1A1A1;">Your free 24h trial is active. We sent a confirmation to {{email}}.</p>
+<a href="ModHome.dc.html" style="height:56px;margin-top:12px;display:flex;align-items:center;justify-content:center;border-radius:28px;background:#CBF21D;color:#0A0A0A;text-decoration:none;font-size:16px;font-weight:600;">Let's go</a>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { first: '', last: '', email: '', password: '', ref: '', showPwd: false, loading: false, done: false, bad: {} };
+  }
+  componentWillUnmount() { clearTimeout(this.t); }
+  renderVals() {
+    const s = this.state;
+    const pw = s.password;
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (/[0-9]/.test(pw) && /[a-zA-Z]/.test(pw)) score++;
+    if (pw.length >= 12 || /[^a-zA-Z0-9]/.test(pw)) score++;
+    if (pw.length > 0 && pw.length < 8) score = 0;
+    const SC = ['#FF8A80', '#F5B841', '#CBF21D'];
+    const col = score === 0 ? '#FF8A80' : SC[score - 1];
+    const off = '#2A2A2A';
+    const red = '#FF8A80';
+    const set = (k) => (e) => this.setState({ [k]: k === 'ref' ? e.target.value.toUpperCase().replace(/\s/g, '') : e.target.value, bad: Object.assign({}, s.bad, { [k]: false }) });
+    const anyBad = Object.values(s.bad).some(Boolean);
+    return {
+      first: s.first, last: s.last, email: s.email, password: s.password, ref: s.ref,
+      setFirst: set('first'), setLast: set('last'), setEmail: set('email'), setPassword: set('password'), setRef: set('ref'),
+      firstBorder: s.bad.first ? red : '#1E1E1E',
+      lastBorder: s.bad.last ? red : '#1E1E1E',
+      emailBorder: s.bad.email ? red : '#1E1E1E',
+      passBorder: s.bad.password ? red : '#1E1E1E',
+      refBorder: s.ref.length >= 4 ? '#3A4510' : '#333333',
+      refOk: s.ref.length >= 4,
+      pwdType: s.showPwd ? 'text' : 'password',
+      eyeLabel: s.showPwd ? 'Hide password' : 'Show password',
+      toggleEye: () => this.setState({ showPwd: !s.showPwd }),
+      s1: pw ? col : off,
+      s2: score >= 2 ? col : off,
+      s3: score >= 3 ? col : off,
+      strengthText: !pw ? '' : score === 0 ? 'Too short' : ['Weak', 'Good', 'Strong'][score - 1],
+      strengthColor: col,
+      error: anyBad,
+      errorText: s.bad.password && !s.bad.first && !s.bad.last && !s.bad.email ? 'Password needs at least 8 characters.' : 'Please fill in the highlighted fields.',
+      loading: s.loading,
+      buttonText: s.loading ? 'Creating account…' : 'Create account',
+      submit: () => {
+        const bad = {
+          first: !s.first.trim(),
+          last: !s.last.trim(),
+          email: !/.+@.+\..+/.test(s.email),
+          password: pw.length < 8,
+        };
+        if (Object.values(bad).some(Boolean)) { this.setState({ bad }); return; }
+        this.setState({ loading: true, bad: {} });
+        this.t = setTimeout(() => this.setState({ loading: false, done: true }), 1300);
+      },
+      done: s.done,
+      firstName: s.first.trim() || 'there',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Welcome (modern)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A0A0A;}
+*{box-sizing:border-box;}
+button{font-family:inherit;}
+button:focus-visible,a:focus-visible{outline:2px solid #CBF21D;outline-offset:2px;}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;display:flex;flex-direction:column;background:#0A0A0A;color:#FAFAFA;font-family:'Geist',system-ui,sans-serif;overflow:hidden;">
+<dc-import name="MinStatusBar" hint-size="390px,47px"></dc-import>
+
+<header style="display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 16px 0 24px;">
+<div style="display:flex;align-items:center;gap:8px;"><img src="../assets/logo.png" alt="" style="width:24px;height:24px;object-fit:contain;display:block;"><span style="font-size:16px;font-weight:600;letter-spacing:-0.01em;">EliteFutBot</span></div>
+<a href="ModAuth.dc.html" style="height:36px;display:flex;align-items:center;padding:0 14px;border-radius:18px;background:#161616;color:#FAFAFA;text-decoration:none;font-size:13px;font-weight:500;">Sign in</a>
+</header>
+
+<section aria-label="Preview" style="flex:1 1 0;position:relative;display:flex;align-items:center;justify-content:center;">
+<div aria-hidden="true" style="position:absolute;width:270px;height:300px;border-radius:28px;background:#121212;border:1px solid #1C1C1C;transform:rotate(-7deg) translate(-14px,10px);"></div>
+<div aria-hidden="true" style="position:absolute;width:270px;height:300px;border-radius:28px;background:#151515;border:1px solid #1F1F1F;transform:rotate(4deg) translate(10px,4px);"></div>
+<div style="position:relative;width:280px;height:310px;border-radius:28px;background:#1A1A1A;border:1px solid #262626;padding:22px;display:flex;flex-direction:column;">
+
+<sc-if value="{{s1}}" hint-placeholder-val="{{true}}">
+<div style="flex:1 1 0;display:flex;flex-direction:column;">
+<span style="display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#A1A1A1;"><span>Example session</span><span style="display:flex;align-items:center;gap:6px;color:#CBF21D;"><span style="width:6px;height:6px;border-radius:3px;background:#CBF21D;"></span>Live</span></span>
+<span style="margin-top:18px;font-size:13px;color:#A1A1A1;">Coins earned</span>
+<span style="font-size:44px;font-weight:700;line-height:50px;letter-spacing:-0.04em;font-variant-numeric:tabular-nums;">+24,650</span>
+<div style="margin-top:auto;height:96px;display:flex;align-items:flex-end;gap:8px;">
+<span style="flex:1 1 0;height:28%;border-radius:6px;background:#2A2A2A;"></span>
+<span style="flex:1 1 0;height:42%;border-radius:6px;background:#2A2A2A;"></span>
+<span style="flex:1 1 0;height:36%;border-radius:6px;background:#2A2A2A;"></span>
+<span style="flex:1 1 0;height:58%;border-radius:6px;background:#2A2A2A;"></span>
+<span style="flex:1 1 0;height:52%;border-radius:6px;background:#2A2A2A;"></span>
+<span style="flex:1 1 0;height:74%;border-radius:6px;background:#2A2A2A;"></span>
+<span style="flex:1 1 0;height:100%;border-radius:6px;background:#CBF21D;"></span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{s2}}" hint-placeholder-val="{{false}}">
+<div style="flex:1 1 0;display:flex;flex-direction:column;">
+<div style="display:flex;align-items:center;gap:12px;">
+<span style="width:48px;height:48px;border-radius:16px;background:#CBF21D;color:#0A0A0A;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;">86</span>
+<span style="display:flex;flex-direction:column;"><span style="font-size:16px;font-weight:600;">Dybala</span><span style="font-size:12px;color:#A1A1A1;">Won · just now</span></span>
+</div>
+<div style="margin-top:auto;display:flex;flex-direction:column;gap:8px;">
+<div style="display:flex;justify-content:space-between;align-items:center;height:48px;padding:0 14px;border-radius:14px;background:#222222;"><span style="font-size:13px;color:#A1A1A1;">Bought</span><span style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;">9,500</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;height:48px;padding:0 14px;border-radius:14px;background:#222222;"><span style="font-size:13px;color:#A1A1A1;">Listed at FUTBIN</span><span style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;">12,400</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;height:48px;padding:0 14px;border-radius:14px;background:#CBF21D;color:#0A0A0A;"><span style="font-size:13px;font-weight:500;">Profit after tax</span><span style="font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;">+2,280</span></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{s3}}" hint-placeholder-val="{{false}}">
+<div style="flex:1 1 0;display:flex;flex-direction:column;">
+<span style="width:48px;height:48px;border-radius:16px;background:#CBF21D;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 2.5L4.5 5.8v5.7c0 4.7 3.2 8.2 7.5 10 4.3-1.8 7.5-5.3 7.5-10V5.8z" fill="none" stroke="#0A0A0A" stroke-width="2" stroke-linejoin="round"></path><path d="M8.8 12l2.3 2.3 4.2-4.3" fill="none" stroke="#0A0A0A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+<div style="margin-top:auto;display:flex;flex-direction:column;gap:8px;">
+<div style="display:flex;justify-content:space-between;align-items:center;height:48px;padding:0 8px 0 14px;border-radius:14px;background:#222222;"><span style="font-size:14px;">Safe speed</span><span style="width:40px;height:24px;border-radius:12px;background:#CBF21D;display:flex;justify-content:flex-end;padding:3px;"><span style="width:18px;height:18px;border-radius:9px;background:#0A0A0A;"></span></span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;height:48px;padding:0 8px 0 14px;border-radius:14px;background:#222222;"><span style="font-size:14px;">Sleep breaks</span><span style="width:40px;height:24px;border-radius:12px;background:#CBF21D;display:flex;justify-content:flex-end;padding:3px;"><span style="width:18px;height:18px;border-radius:9px;background:#0A0A0A;"></span></span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;height:48px;padding:0 8px 0 14px;border-radius:14px;background:#222222;"><span style="font-size:14px;">Human-like pauses</span><span style="width:40px;height:24px;border-radius:12px;background:#CBF21D;display:flex;justify-content:flex-end;padding:3px;"><span style="width:18px;height:18px;border-radius:9px;background:#0A0A0A;"></span></span></div>
+</div>
+</div>
+</sc-if>
+</div>
+</section>
+
+<main style="display:flex;flex-direction:column;gap:20px;padding:8px 24px 4px;">
+<div style="display:flex;flex-direction:column;gap:10px;">
+<h1 style="margin:0;font-size:34px;font-weight:700;line-height:38px;letter-spacing:-0.035em;">{{title}}</h1>
+<p style="margin:0;font-size:15px;line-height:23px;color:#A1A1A1;">{{body}}</p>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;height:56px;">
+<div role="tablist" aria-label="Intro steps" style="display:flex;align-items:center;gap:2px;">
+<sc-for list="{{dots}}" as="d" hint-placeholder-count="3">
+<button type="button" role="tab" aria-selected="{{d.on}}" aria-label="{{d.label}}" onClick="{{d.go}}" style="width:{{d.hit}}px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:0;padding:0;cursor:pointer;"><span style="width:{{d.w}}px;height:6px;border-radius:3px;background:{{d.bg}};transition:width .25s,background .25s;"></span></button>
+</sc-for>
+</div>
+<sc-if value="{{notLast}}" hint-placeholder-val="{{true}}"><button type="button" aria-label="Next" onClick="{{next}}" style="width:56px;height:56px;border-radius:28px;border:1px solid #2A2A2A;background:#161616;display:flex;align-items:center;justify-content:center;cursor:pointer;"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="#FAFAFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></sc-if>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:8px;">
+<a href="https://www.elitefutbot.com/register" style="height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 22px;border-radius:28px;background:#CBF21D;color:#0A0A0A;text-decoration:none;font-size:16px;font-weight:600;">Start free 24h trial<span style="width:40px;height:40px;border-radius:20px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8" fill="none" stroke="#CBF21D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></a>
+<p style="margin:4px 0 0;text-align:center;font-size:11px;line-height:16px;color:#808080;">Results vary. Not affiliated with Electronic Arts Inc.</p>
+</div>
+</main>
+
+<div style="height:34px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;flex-shrink:0;"><span style="width:134px;height:5px;border-radius:3px;background:#FAFAFA;"></span></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { i: 0 };
+  }
+  renderVals() {
+    const i = this.state.i;
+    const S = [
+      ['Snipe smarter. Earn on autopilot.', 'The bot works the transfer market for you while you get on with your day.'],
+      ['Buys low. Sells at market.', 'Every card it wins is listed at live FUTBIN or FUT.GG prices, EA tax covered.'],
+      ['Your account, protected.', 'Safe speeds and human-like pauses are on by default. Your EA login stays with EA.'],
+    ];
+    return {
+      s1: i === 0, s2: i === 1, s3: i === 2,
+      title: S[i][0], body: S[i][1],
+      notLast: i !== 2,
+      next: () => this.setState({ i: Math.min(i + 1, 2) }),
+      dots: S.map((_, k) => ({
+        on: k === i,
+        label: 'Step ' + (k + 1) + ' of 3',
+        w: k === i ? 24 : 6,
+        hit: k === i ? 34 : 18,
+        bg: k === i ? '#CBF21D' : '#333333',
+        go: () => this.setState({ i: k }),
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>
