@@ -14,6 +14,13 @@ import {
   EA_CHROME_USER_AGENT,
   INJECTED_VIEWPORT_SCRIPT,
 } from '@/src/features/webapp/webAppConfig';
+import { useBotBridge, type BotPageEvent } from '@/src/features/webapp/bot/useBotBridge';
+import { useSniperBot, type SniperSettings } from '@/src/features/webapp/bot/useSniperBot';
+import type { BotPlayerInfoPayload } from '@/src/features/webapp/bot/botRuntime';
+import {
+  useFutbinScraper,
+  FUTBIN_BASE_URL,
+} from '@/src/features/webapp/bot/useFutbinScraper';
 
 export function WebAppScreen(): React.ReactElement {
   const insets = useSafeAreaInsets();
@@ -21,22 +28,47 @@ export function WebAppScreen(): React.ReactElement {
   const controlsSheetRef = useRef<BottomSheetModal>(null);
   const logSheetRef = useRef<BottomSheetModal>(null);
 
-  const [isRunning, setIsRunning] = useState(false);
-  const [loops, setLoops] = useState(0);
+  const [player, setPlayer] = useState<BotPlayerInfoPayload | null>(null);
   const [isListing, setIsListing] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('3 cards listed at FUTBIN +5%');
   const [isLoading, setIsLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
 
-  // Background loop counter when bot is running
-  useEffect(() => {
-    if (!isRunning) return;
-    const loopInterval = setInterval(() => {
-      setLoops((prev) => prev + 1);
-    }, 4000);
+  // Hidden WebView scraper for live FUTBIN lowest BIN prices (Cloudflare bypass)
+  const futbin = useFutbinScraper();
 
-    return () => clearInterval(loopInterval);
-  }, [isRunning]);
+  // useSniperBot needs the bridge, and the bridge onEvent routes through onEventRef
+  const onEventRef = useRef<(e: BotPageEvent) => void>(() => {});
+  const bridge = useBotBridge(webViewRef, (e) => onEventRef.current(e));
+  const bot = useSniperBot(bridge, {
+    putBotStatus: async () => {},
+    putStats: async () => {},
+  });
+
+  onEventRef.current = (e) => {
+    bot.handlePageEvent(e);
+
+    if (e.type === 'BOT_PLAYER_INFO') {
+      // If user searched in EA UI while bot is already running, do not override
+      if (e.payload.fromUserSearch && bot.isRunning) return;
+      const validPlayer = e.payload.maskedDefId ? e.payload : null;
+      setPlayer(validPlayer);
+
+      if (e.payload.name) {
+        const platform = bot.userInfo?.platform?.toLowerCase().includes('pc')
+          ? 'pc'
+          : 'ps';
+        void futbin.fetchPlayerPrice(e.payload.name, e.payload.maskedDefId, platform);
+      }
+    } else if (e.type === 'BOT_READY') {
+      void bridge.getUserInfo();
+    } else if (e.type === 'BOT_PURCHASE') {
+      setToastMessage(`Bought ${e.payload.name} for ${e.payload.price.toLocaleString()}`);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+  };
 
   const listTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -58,6 +90,7 @@ export function WebAppScreen(): React.ReactElement {
     setIsListing(true);
     listTimeoutRef.current = setTimeout(() => {
       setIsListing(false);
+      setToastMessage('3 cards listed at FUTBIN +5%');
       setShowToast(true);
       toastTimeoutRef.current = setTimeout(() => setShowToast(false), 2400);
     }, 1200);
@@ -68,13 +101,17 @@ export function WebAppScreen(): React.ReactElement {
   const handleOpenActivityLog = useCallback(() => logSheetRef.current?.present(), []);
   const handleCloseActivityLog = useCallback(() => logSheetRef.current?.dismiss(), []);
 
-  const handleToggleRun = useCallback(() => {
-    setIsRunning((prev) => {
-      const next = !prev;
-      setLoops(next ? 1 : 0);
-      return next;
-    });
-  }, []);
+  const handleStartBot = useCallback(
+    async (settings: SniperSettings): Promise<string | null> => {
+      const err = await bot.start(settings);
+      return err;
+    },
+    [bot]
+  );
+
+  const handleStopBot = useCallback(() => {
+    bot.stop();
+  }, [bot]);
 
   const floatingActionsStyle = React.useMemo(
     () => ({
@@ -95,15 +132,15 @@ export function WebAppScreen(): React.ReactElement {
     <View style={styles.container}>
       <WebAppTopBar
         topInset={insets.top}
-        isRunning={isRunning}
-        loops={loops}
+        isRunning={bot.isRunning}
+        loops={bot.loopCount}
         onReload={handleReload}
       />
 
       <WebAppToast
         visible={showToast}
         topInset={insets.top}
-        message="3 cards listed at FUTBIN +5%"
+        message={toastMessage}
       />
 
       {/* Loading progress bar */}
@@ -143,9 +180,14 @@ export function WebAppScreen(): React.ReactElement {
           onLoadProgress={({ nativeEvent }) => {
             setLoadProgress(nativeEvent.progress);
           }}
-          onLoadEnd={() => {
+          onLoadEnd={({ nativeEvent }) => {
             setIsLoading(false);
+            bridge.injectBot(nativeEvent.url);
           }}
+          onNavigationStateChange={({ url, loading }) => {
+            if (!loading) bridge.injectBot(url);
+          }}
+          onMessage={bridge.handleMessage}
           renderLoading={() => (
             <View style={styles.centerLoading}>
               <ActivityIndicator size="large" color={colors.accent} />
@@ -184,18 +226,42 @@ export function WebAppScreen(): React.ReactElement {
 
       <SnipingControlsSheet
         ref={controlsSheetRef}
-        isRunning={isRunning}
-        loops={loops}
-        onToggleRun={handleToggleRun}
+        isRunning={bot.isRunning}
+        loops={bot.loopCount}
+        elapsedSeconds={bot.elapsedSeconds}
+        statusText={bot.statusText}
+        error={bot.lastError}
+        player={player}
+        futbinPrice={futbin.currentPrice}
+        isLoadingPrice={futbin.isLoadingPrice}
+        onStart={handleStartBot}
+        onStop={handleStopBot}
         onOpenActivityLog={handleOpenActivityLog}
         onClose={handleCloseControls}
       />
 
       <ActivityLogSheet
         ref={logSheetRef}
-        isLive={isRunning}
+        isLive={bot.isRunning}
+        logs={bot.logs}
+        onClear={bot.clearLogs}
         onClose={handleCloseActivityLog}
       />
+
+      {/* Hidden Secondary WebView for Cloudflare-bypassed FUTBIN Live Price Scraping */}
+      <View style={styles.hiddenWebView} pointerEvents="none">
+        <WebView
+          ref={futbin.futbinWebViewRef}
+          source={{ uri: FUTBIN_BASE_URL }}
+          userAgent={EA_CHROME_USER_AGENT}
+          javaScriptEnabled
+          domStorageEnabled
+          onMessage={futbin.handleFutbinMessage}
+          onLoadEnd={futbin.onFutbinLoadEnd}
+          style={styles.zeroSize}
+          pointerEvents="none"
+        />
+      </View>
     </View>
   );
 }
@@ -212,6 +278,19 @@ const styles = StyleSheet.create({
   webView: {
     flex: 1,
     backgroundColor: '#0A0A0A',
+  },
+  hiddenWebView: {
+    width: 0,
+    height: 0,
+    opacity: 0,
+    position: 'absolute',
+    left: -1000,
+    top: -1000,
+    zIndex: -1,
+  },
+  zeroSize: {
+    width: 0,
+    height: 0,
   },
   loadingBarContainer: {
     position: 'absolute',
@@ -240,7 +319,8 @@ const styles = StyleSheet.create({
   floatingActions: {
     position: 'absolute',
     right: spacing.gap,
-    zIndex: 10,
+    zIndex: 999,
+    elevation: 25,
     flexDirection: 'row',
     gap: spacing.md,
   },
@@ -253,6 +333,7 @@ const styles = StyleSheet.create({
     borderColor: '#2A2A2A',
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 26,
   },
   listAllText: {
     fontFamily: fonts.medium,
@@ -268,6 +349,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+    elevation: 26,
   },
   controlsLogo: {
     width: 18,

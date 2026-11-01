@@ -13,26 +13,52 @@ import {
   SpeedPresetSelector,
   type SpeedPresetKey,
 } from '@/src/features/webapp/SpeedPresetSelector';
-import { SnipingTargetInputs } from '@/src/features/webapp/SnipingTargetInputs';
+import { SnipingTargetInputs, type PlayerInfo } from '@/src/features/webapp/SnipingTargetInputs';
+import {
+  DEFAULT_SNIPER_SETTINGS,
+  type SniperSettings,
+} from '@/src/features/webapp/bot/useSniperBot';
 
 export interface SnipingControlsSheetProps {
   isRunning: boolean;
   loops: number;
-  onToggleRun: () => void;
+  elapsedSeconds?: number;
+  statusText?: string;
+  error?: string | null;
+  player?: PlayerInfo | null;
+  futbinPrice?: number | null;
+  isLoadingPrice?: boolean;
+  onStart?: (settings: SniperSettings) => Promise<string | null>;
+  onStop?: () => void;
+  onToggleRun?: () => void;
   onOpenActivityLog: () => void;
   onClose: () => void;
 }
 
 export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControlsSheetProps>(
   function SnipingControlsSheet(
-    { isRunning, loops, onToggleRun, onOpenActivityLog, onClose },
+    {
+      isRunning,
+      loops,
+      elapsedSeconds,
+      statusText,
+      error,
+      player,
+      futbinPrice,
+      isLoadingPrice,
+      onStart,
+      onStop,
+      onToggleRun,
+      onOpenActivityLog,
+      onClose,
+    },
     ref
   ): React.ReactElement {
-    const [player, setPlayer] = useState('Mbappé');
     const [maxPrice, setMaxPrice] = useState('15000');
     const [needPrice, setNeedPrice] = useState(false);
     const [selectedPreset, setSelectedPreset] = useState<SpeedPresetKey>('safe');
-    const [autoList, setAutoList] = useState(true);
+    const [autoList, setAutoList] = useState(false);
+    const [localError, setLocalError] = useState<string | null>(null);
 
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) => (
@@ -50,27 +76,59 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
       const numeric = text.replace(/[^0-9]/g, '');
       setMaxPrice(numeric);
       setNeedPrice(false);
+      setLocalError(null);
     }, []);
 
-    const handleRunPress = useCallback(() => {
-      if (!isRunning && !maxPrice.trim()) {
+    const handleRunPress = useCallback(async () => {
+      setLocalError(null);
+
+      if (isRunning) {
+        if (onStop) {
+          onStop();
+        } else if (onToggleRun) {
+          onToggleRun();
+        }
+        return;
+      }
+
+      const numericMaxPrice = Number(maxPrice);
+      if (!maxPrice.trim() || numericMaxPrice <= 0) {
         setNeedPrice(true);
         return;
       }
-      onToggleRun();
-    }, [isRunning, maxPrice, onToggleRun]);
+
+      if (onStart) {
+        const settings: SniperSettings = {
+          ...DEFAULT_SNIPER_SETTINGS,
+          maxPrice: numericMaxPrice,
+          preset: selectedPreset,
+          autoList,
+          futbinPrice: autoList ? (futbinPrice ?? null) : null,
+        };
+        const startErr = await onStart(settings);
+        if (startErr) {
+          setLocalError(startErr);
+        }
+      } else if (onToggleRun) {
+        onToggleRun();
+      }
+    }, [isRunning, maxPrice, onStart, onStop, onToggleRun, selectedPreset, autoList, futbinPrice]);
 
     const loopText = isRunning ? `Loop ${loops}` : 'Idle';
     const loopChipStyle = [styles.loopChipText, isRunning ? styles.loopLime : styles.loopGray];
+    const displayError = localError || error;
+
+    const snapPoints = React.useMemo(() => ['78%'], []);
 
     return (
       <BottomSheetModal
         ref={ref}
-        snapPoints={['75%']}
+        name="sniping-controls"
+        snapPoints={snapPoints}
+        enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
         backgroundStyle={styles.sheetBackground}
         handleIndicatorStyle={styles.handleIndicator}
-        onDismiss={onClose}
       >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Sniping controls</Text>
@@ -91,9 +149,14 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
           contentContainerStyle={styles.bodyScroll}
           showsVerticalScrollIndicator={false}
         >
+          {displayError ? (
+            <View style={styles.errorBanner}>
+              <Text style={styles.errorBannerText}>{displayError}</Text>
+            </View>
+          ) : null}
+
           <SnipingTargetInputs
-            player={player}
-            onPlayerChange={setPlayer}
+            playerInfo={player}
             maxPrice={maxPrice}
             onMaxPriceChange={handleMaxPriceChange}
             needPrice={needPrice}
@@ -101,6 +164,9 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
             onAutoListChange={setAutoList}
             isRunning={isRunning}
             loops={loops}
+            statusText={statusText}
+            futbinPrice={futbinPrice}
+            isLoadingPrice={isLoadingPrice}
           />
 
           <SpeedPresetSelector
@@ -112,6 +178,7 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
         <View style={styles.footerActions}>
           <SnipingStopwatchButton
             isRunning={isRunning}
+            elapsedSeconds={elapsedSeconds}
             onToggle={handleRunPress}
           />
 
@@ -165,50 +232,64 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radii.sm,
-    borderWidth: 1,
+    overflow: 'hidden',
   },
   loopLime: {
+    backgroundColor: 'rgba(0, 229, 153, 0.12)',
     color: colors.accent,
-    backgroundColor: 'rgba(212, 255, 0, 0.08)',
-    borderColor: 'rgba(212, 255, 0, 0.25)',
   },
   loopGray: {
+    backgroundColor: '#222222',
     color: '#888888',
-    backgroundColor: '#1C1C1C',
-    borderColor: '#2A2A2A',
   },
   closeCircle: {
     width: 28,
     height: 28,
-    borderRadius: radii.full,
-    backgroundColor: '#1F1F1F',
+    borderRadius: radii.avatar,
+    backgroundColor: '#222222',
     alignItems: 'center',
     justifyContent: 'center',
   },
   bodyScroll: {
     paddingHorizontal: spacing.xxxl,
     paddingTop: spacing.xxl,
-    paddingBottom: spacing.xxxl,
+    paddingBottom: spacing.lg,
+  },
+  errorBanner: {
+    backgroundColor: 'rgba(255, 68, 68, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 68, 68, 0.4)',
+    borderRadius: radii.md,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  errorBannerText: {
+    fontFamily: fonts.medium,
+    fontSize: fontSizes.xs,
+    color: '#FF6B6B',
+    lineHeight: 18,
   },
   footerActions: {
     paddingHorizontal: spacing.xxxl,
     paddingTop: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.xxxl,
+    gap: spacing.md,
     borderTopWidth: 1,
     borderTopColor: '#222222',
     backgroundColor: '#111111',
-    gap: spacing.sm,
   },
   activityLogButton: {
-    height: 44,
+    height: 48,
     borderRadius: radii.md,
-    backgroundColor: '#1C1C1C',
+    borderWidth: 1,
+    borderColor: '#333333',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   activityLogText: {
     fontFamily: fonts.medium,
     fontSize: fontSizes.sm,
-    color: '#CCCCCC',
+    color: '#D4D4D4',
   },
 });

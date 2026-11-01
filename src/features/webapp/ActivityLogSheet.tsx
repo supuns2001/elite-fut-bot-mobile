@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useState } from 'react';
+import React, { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   BottomSheetBackdrop,
@@ -12,19 +12,68 @@ import { Toggle } from '@/src/components/Toggle';
 import {
   ActivityLogItem,
   INITIAL_LOG_ITEMS,
+  LogTag,
+  TAG_COLORS,
 } from '@/src/services/botService';
+import type { SniperLogEntry } from '@/src/features/webapp/bot/useSniperBot';
 import { ActivityLogRow } from '@/src/features/webapp/ActivityLogRow';
 import { colors, fonts, fontSizes, radii, spacing } from '@/src/theme/tokens';
 
 export interface ActivityLogSheetProps {
   isLive: boolean;
+  logs?: SniperLogEntry[];
+  onClear?: () => void;
   onClose: () => void;
 }
 
 export const ActivityLogSheet = forwardRef<BottomSheetModal, ActivityLogSheetProps>(
-  function ActivityLogSheet({ isLive, onClose }, ref): React.ReactElement {
-    const [logs, setLogs] = useState<ActivityLogItem[]>(INITIAL_LOG_ITEMS);
+  function ActivityLogSheet({ isLive, logs: propLogs, onClear, onClose }, ref): React.ReactElement {
+    const [localLogs, setLocalLogs] = useState<ActivityLogItem[]>(INITIAL_LOG_ITEMS);
     const [autoScroll, setAutoScroll] = useState(true);
+
+    const displayLogs = useMemo<ActivityLogItem[]>(() => {
+      if (!propLogs) return localLogs;
+      return propLogs.map((entry) => {
+        const timeStr =
+          entry.time instanceof Date
+            ? entry.time.toTimeString().split(' ')[0]
+            : String(entry.time);
+
+        let tag: LogTag = 'INFO';
+        const msg = entry.message.toLowerCase();
+        if (
+          entry.detail?.kind === 'search' ||
+          msg.includes('search') ||
+          msg.includes('criteria')
+        ) {
+          tag = 'SEARCH';
+        } else if (
+          entry.detail?.kind === 'snipe' ||
+          entry.detail?.kind === 'buy' ||
+          msg.includes('bought') ||
+          entry.level === 'success'
+        ) {
+          tag = 'BOUGHT';
+        } else if (msg.includes('list')) {
+          tag = 'LISTED';
+        } else if (
+          msg.includes('pause') ||
+          msg.includes('sleep') ||
+          entry.level === 'warning' ||
+          entry.level === 'error'
+        ) {
+          tag = 'PAUSE';
+        }
+
+        return {
+          id: entry.id,
+          time: timeStr,
+          tag,
+          msg: entry.message,
+          color: TAG_COLORS[tag] || TAG_COLORS.INFO,
+        };
+      });
+    }, [propLogs, localLogs]);
 
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) => (
@@ -39,8 +88,12 @@ export const ActivityLogSheet = forwardRef<BottomSheetModal, ActivityLogSheetPro
     );
 
     const handleClear = useCallback(() => {
-      setLogs([]);
-    }, []);
+      if (onClear) {
+        onClear();
+      } else {
+        setLocalLogs([]);
+      }
+    }, [onClear]);
 
     const renderLogItem: ListRenderItem<ActivityLogItem> = useCallback(
       ({ item }) => <ActivityLogRow item={item} />,
@@ -49,14 +102,17 @@ export const ActivityLogSheet = forwardRef<BottomSheetModal, ActivityLogSheetPro
 
     const keyExtractor = useCallback((item: ActivityLogItem) => item.id, []);
 
+    const snapPoints = useMemo(() => ['80%'], []);
+
     return (
       <BottomSheetModal
         ref={ref}
-        snapPoints={['80%']}
+        name="activity-log"
+        snapPoints={snapPoints}
+        enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
         backgroundStyle={styles.sheetBackground}
         handleIndicatorStyle={styles.handleIndicator}
-        onDismiss={onClose}
       >
         <BottomSheetView style={styles.container}>
           {/* Header */}
@@ -94,26 +150,30 @@ export const ActivityLogSheet = forwardRef<BottomSheetModal, ActivityLogSheetPro
 
           {/* FlashList of Logs */}
           <View style={styles.listContainer}>
-            {logs.length > 0 ? (
+            {displayLogs.length > 0 ? (
               <FlashList
-                data={logs}
+                data={displayLogs}
                 renderItem={renderLogItem}
                 keyExtractor={keyExtractor}
                 showsVerticalScrollIndicator={false}
               />
             ) : (
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No events yet.</Text>
+                <Text style={styles.emptyText}>No activity recorded yet.</Text>
+                <Text style={styles.emptySubtext}>
+                  Logs will appear here once the bot searches or buys cards.
+                </Text>
               </View>
             )}
           </View>
 
-          {/* Footer with event count and auto-scroll switch */}
+          {/* Footer Controls */}
           <View style={styles.footer}>
-            <Text style={styles.footerCount}>
-              {logs.length} events · Auto-scroll
-            </Text>
-            <Toggle value={autoScroll} onValueChange={setAutoScroll} />
+            <View style={styles.autoScrollGroup}>
+              <Text style={styles.footerLabel}>Auto-scroll</Text>
+              <Toggle value={autoScroll} onValueChange={setAutoScroll} />
+            </View>
+            <Text style={styles.entriesCount}>{displayLogs.length} entries</Text>
           </View>
         </BottomSheetView>
       </BottomSheetModal>
@@ -133,13 +193,15 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    paddingHorizontal: spacing.xxxl,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xxxl,
+    justifyContent: 'space-between',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.xxxl,
-    paddingTop: spacing.xs,
     paddingBottom: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: '#222222',
@@ -158,11 +220,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: 'rgba(0, 229, 153, 0.12)',
+    borderRadius: radii.sm,
   },
   liveDot: {
     width: 6,
     height: 6,
-    borderRadius: radii.full,
+    borderRadius: 3,
     backgroundColor: colors.accent,
   },
   liveText: {
@@ -177,52 +243,64 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   clearButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 4,
-    borderRadius: radii.sm,
-    backgroundColor: '#1F1F1F',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   clearText: {
     fontFamily: fonts.medium,
-    fontSize: fontSizes.xs,
-    color: '#AAAAAA',
+    fontSize: fontSizes.sm,
+    color: '#888888',
   },
   closeCircle: {
     width: 28,
     height: 28,
-    borderRadius: radii.full,
-    backgroundColor: '#1F1F1F',
+    borderRadius: radii.avatar,
+    backgroundColor: '#222222',
     alignItems: 'center',
     justifyContent: 'center',
   },
   listContainer: {
     flex: 1,
-    paddingHorizontal: spacing.xxxl,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
   },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: spacing.xs,
   },
   emptyText: {
+    fontFamily: fonts.medium,
+    fontSize: fontSizes.base,
+    color: '#D4D4D4',
+  },
+  emptySubtext: {
     fontFamily: fonts.regular,
-    fontSize: fontSizes.sm,
-    color: '#666666',
+    fontSize: fontSizes.xs,
+    color: '#777777',
+    textAlign: 'center',
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.xxxl,
-    paddingVertical: spacing.lg,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
     borderTopColor: '#222222',
-    backgroundColor: '#111111',
   },
-  footerCount: {
-    fontFamily: fonts.regular,
-    fontSize: fontSizes.xs,
+  autoScrollGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  footerLabel: {
+    fontFamily: fonts.medium,
+    fontSize: fontSizes.sm,
     color: '#888888',
+  },
+  entriesCount: {
+    fontFamily: fonts.monoRegular,
+    fontSize: fontSizes.xs,
+    color: '#555555',
   },
 });

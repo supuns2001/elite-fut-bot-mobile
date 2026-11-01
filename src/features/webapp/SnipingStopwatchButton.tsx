@@ -4,11 +4,13 @@ import { colors, fonts, fontSizes, radii } from '@/src/theme/tokens';
 
 export interface SnipingStopwatchButtonProps {
   isRunning: boolean;
+  elapsedSeconds?: number;
   onToggle: () => void;
 }
 
 export const SnipingStopwatchButton = React.memo(function SnipingStopwatchButton({
   isRunning,
+  elapsedSeconds,
   onToggle,
 }: SnipingStopwatchButtonProps): React.ReactElement {
   const [seconds, setSeconds] = useState(0);
@@ -16,12 +18,12 @@ export const SnipingStopwatchButton = React.memo(function SnipingStopwatchButton
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
 
-    if (isRunning) {
+    if (isRunning && elapsedSeconds === undefined) {
       setSeconds(0);
       interval = setInterval(() => {
         setSeconds((prev) => prev + 1);
       }, 1000);
-    } else {
+    } else if (!isRunning) {
       setSeconds(0);
     }
 
@@ -30,10 +32,11 @@ export const SnipingStopwatchButton = React.memo(function SnipingStopwatchButton
         clearInterval(interval);
       }
     };
-  }, [isRunning]);
+  }, [isRunning, elapsedSeconds]);
 
-  const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
-  const ss = String(seconds % 60).padStart(2, '0');
+  const displaySecs = elapsedSeconds !== undefined ? elapsedSeconds : seconds;
+  const mm = String(Math.floor(displaySecs / 60)).padStart(2, '0');
+  const ss = String(displaySecs % 60).padStart(2, '0');
   const buttonText = isRunning ? `Stop · ${mm}:${ss}` : 'Start sniping';
 
   return (

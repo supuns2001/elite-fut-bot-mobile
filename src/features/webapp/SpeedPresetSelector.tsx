@@ -15,8 +15,8 @@ export const SPEED_PRESETS: SpeedPresetConfig[] = [
   {
     key: 'safe',
     label: 'Safe',
-    rpm: '4 rpm',
-    helpText: '4 searches a minute. Recommended for daily use.',
+    rpm: '3 rpm',
+    helpText: '3 searches a minute. Recommended for daily use.',
   },
   {
     key: 'caution',
@@ -27,8 +27,8 @@ export const SPEED_PRESETS: SpeedPresetConfig[] = [
   {
     key: 'risky',
     label: 'Risky',
-    rpm: '10 rpm',
-    helpText: '10 searches a minute. Short sessions only.',
+    rpm: '9 rpm',
+    helpText: '9 searches a minute. Short sessions only.',
   },
 ];
 

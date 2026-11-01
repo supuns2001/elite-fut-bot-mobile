@@ -3,9 +3,14 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { Toggle } from '@/src/components/Toggle';
 import { colors, fonts, fontSizes, radii, spacing } from '@/src/theme/tokens';
 
+export interface PlayerInfo {
+  name: string;
+  rating?: number;
+  maskedDefId?: number | null;
+}
+
 export interface SnipingTargetInputsProps {
-  player: string;
-  onPlayerChange: (text: string) => void;
+  playerInfo?: PlayerInfo | null;
   maxPrice: string;
   onMaxPriceChange: (text: string) => void;
   needPrice: boolean;
@@ -13,11 +18,15 @@ export interface SnipingTargetInputsProps {
   onAutoListChange: (value: boolean) => void;
   isRunning: boolean;
   loops: number;
+  statusText?: string;
+  futbinPrice?: number | null;
+  isLoadingPrice?: boolean;
+  player?: string;
+  onPlayerChange?: (text: string) => void;
 }
 
 export const SnipingTargetInputs = React.memo(function SnipingTargetInputs({
-  player,
-  onPlayerChange,
+  playerInfo,
   maxPrice,
   onMaxPriceChange,
   needPrice,
@@ -25,22 +34,52 @@ export const SnipingTargetInputs = React.memo(function SnipingTargetInputs({
   onAutoListChange,
   isRunning,
   loops,
+  statusText,
+  futbinPrice,
+  isLoadingPrice,
+  player,
+  onPlayerChange,
 }: SnipingTargetInputsProps): React.ReactElement {
   const priceBoxStyle = [styles.priceContainer, needPrice ? styles.priceError : null];
   const statusDotStyle = [styles.statusDot, isRunning ? styles.dotLime : styles.dotGray];
 
+  const activePlayer = playerInfo || (player ? { name: player } : null);
+
+  const autoListSubtitle = isLoadingPrice
+    ? 'Checking FUTBIN lowest BIN…'
+    : futbinPrice
+    ? `FUTBIN: ${futbinPrice.toLocaleString()} coins (Lists at ~${Math.round(futbinPrice * 1.05 + 250).toLocaleString()})`
+    : 'At FUTBIN + 5%';
+
   return (
     <>
-      {/* Player Input */}
+      {/* Target Player Card */}
       <View style={styles.inputGroup}>
-        <Text style={styles.fieldLabel}>Player</Text>
-        <TextInput
-          value={player}
-          onChangeText={onPlayerChange}
-          placeholder="Name or quality"
-          placeholderTextColor={colors.textPlaceholder}
-          style={styles.textInput}
-        />
+        <View style={styles.labelRow}>
+          <Text style={styles.fieldLabel}>Target player</Text>
+          {activePlayer?.name ? (
+            <Text style={styles.liveBadge}>✓ Transfer Market</Text>
+          ) : null}
+        </View>
+
+        {activePlayer?.name ? (
+          <View style={styles.playerCardActive}>
+            <View style={styles.playerRatingBadge}>
+              <Text style={styles.playerRatingText}>{activePlayer.rating || '★'}</Text>
+            </View>
+            <View style={styles.playerMeta}>
+              <Text style={styles.playerNameText}>{activePlayer.name}</Text>
+              <Text style={styles.playerHintText}>Captured from Transfer Market search</Text>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.playerCardEmpty}>
+            <Text style={styles.playerEmptyTitle}>No player selected</Text>
+            <Text style={styles.playerEmptySubtext}>
+              Search a player in the EA Transfer Market, then press Start.
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Max buy now input */}
@@ -66,7 +105,7 @@ export const SnipingTargetInputs = React.memo(function SnipingTargetInputs({
       <View style={styles.toggleRow}>
         <View style={styles.toggleTextGroup}>
           <Text style={styles.toggleTitle}>Auto-list won cards</Text>
-          <Text style={styles.toggleSubtitle}>At FUTBIN + 5%</Text>
+          <Text style={styles.toggleSubtitle}>{autoListSubtitle}</Text>
         </View>
         <Toggle value={autoList} onValueChange={onAutoListChange} />
       </View>
@@ -75,7 +114,9 @@ export const SnipingTargetInputs = React.memo(function SnipingTargetInputs({
       <View style={styles.statusRow}>
         <View style={statusDotStyle} />
         <Text style={styles.statusText}>
-          {isRunning ? `Searching market · loop ${loops}` : 'Idle'}
+          {isRunning
+            ? statusText || `Searching market · loop ${loops}`
+            : statusText || 'Idle'}
         </Text>
       </View>
     </>
@@ -86,24 +127,85 @@ const styles = StyleSheet.create({
   inputGroup: {
     marginBottom: spacing.xxl,
   },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
   fieldLabel: {
     fontFamily: fonts.medium,
     fontSize: fontSizes.xs,
     color: '#888888',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: spacing.sm,
   },
-  textInput: {
-    height: 48,
-    borderRadius: radii.md,
-    backgroundColor: '#161616',
-    borderWidth: 1,
-    borderColor: '#222222',
-    paddingHorizontal: spacing.lg,
+  liveBadge: {
     fontFamily: fonts.medium,
+    fontSize: 11,
+    color: colors.accent,
+  },
+  playerCardActive: {
+    backgroundColor: '#161616',
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 229, 153, 0.35)',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  playerRatingBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0, 229, 153, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playerRatingText: {
+    fontFamily: fonts.bold,
+    fontSize: fontSizes.sm,
+    color: colors.accent,
+  },
+  playerMeta: {
+    flex: 1,
+    gap: 2,
+  },
+  playerNameText: {
+    fontFamily: fonts.semiBold,
     fontSize: fontSizes.base,
     color: colors.textPrimary,
+  },
+  playerHintText: {
+    fontFamily: fonts.regular,
+    fontSize: fontSizes.xs,
+    color: colors.textSecondary,
+  },
+  playerCardEmpty: {
+    backgroundColor: '#141414',
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#2C2C2C',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  playerEmptyTitle: {
+    fontFamily: fonts.medium,
+    fontSize: fontSizes.sm,
+    color: '#D4D4D4',
+  },
+  playerEmptySubtext: {
+    fontFamily: fonts.regular,
+    fontSize: fontSizes.xs,
+    color: '#777777',
+    textAlign: 'center',
+    lineHeight: 18,
   },
   priceContainer: {
     height: 48,
