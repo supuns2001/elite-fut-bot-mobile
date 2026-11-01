@@ -1,19 +1,17 @@
-import React, { useCallback } from 'react';
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '@/src/components/Button';
 import { colors, fonts, fontSizes, spacing } from '@/src/theme/tokens';
+import { SupportConnectionCard } from '@/src/features/support/SupportConnectionCard';
+import { SupportDiscordCard } from '@/src/features/support/SupportDiscordCard';
+import { SupportFaqAccordion } from '@/src/features/support/SupportFaqAccordion';
 
 export default function SupportTabRoute(): React.ReactElement {
   const insets = useSafeAreaInsets();
 
-  const handleDiscordPress = useCallback(() => {
-    void Linking.openURL('https://discord.gg/Rkb9nF6WG6');
-  }, []);
-
-  const containerInset = React.useMemo(
+  const containerInset = useMemo(
     () => ({
-      paddingTop: insets.top,
+      paddingTop: Math.max(insets.top, spacing.md),
       paddingBottom: Math.max(insets.bottom, spacing.md) + 80,
     }),
     [insets.top, insets.bottom]
@@ -21,19 +19,27 @@ export default function SupportTabRoute(): React.ReactElement {
 
   return (
     <View style={[styles.container, containerInset]}>
-      <View style={styles.centerBox}>
-        <Text style={styles.title}>Help &amp; Support</Text>
-        <Text style={styles.subtitle}>24/7 Community and Live Bot Assistance</Text>
-
-        <View style={styles.buttonWrapper}>
-          <Button
-            title="Join Discord Support"
-            variant="pill-with-arrow"
-            arrowType="diagonal"
-            onPress={handleDiscordPress}
-          />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header: Title 34 Bold with letterSpacing -1.2, Subtitle 15 Medium */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Help</Text>
+          <Text style={styles.subtitle}>
+            Check your connection or talk to our team.
+          </Text>
         </View>
-      </View>
+
+        {/* 1. Connection Test Card */}
+        <SupportConnectionCard />
+
+        {/* 2. Discord Contact Card */}
+        <SupportDiscordCard />
+
+        {/* 3. Common Questions Accordion */}
+        <SupportFaqAccordion />
+      </ScrollView>
     </View>
   );
 }
@@ -43,26 +49,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  centerBox: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.screenPadding,
-    gap: spacing.md,
+  scrollContent: {
+    paddingHorizontal: spacing.gap,
+    gap: spacing.xxl, // 14px gap between sections
+    paddingTop: spacing.xs,
+  },
+  header: {
+    gap: spacing.xxs,
+    marginBottom: spacing.xs,
   },
   title: {
     fontFamily: fonts.bold,
     fontSize: fontSizes.displayMd,
+    letterSpacing: -1.2,
     color: colors.textPrimary,
   },
   subtitle: {
-    fontFamily: fonts.regular,
-    fontSize: fontSizes.base,
+    fontFamily: fonts.medium,
+    fontSize: fontSizes.md,
     color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  buttonWrapper: {
-    width: '100%',
-    marginTop: spacing.xl,
+    lineHeight: 20,
   },
 });

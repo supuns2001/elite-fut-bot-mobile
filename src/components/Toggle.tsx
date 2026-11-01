@@ -4,9 +4,9 @@ import Animated, {
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
-import { colors, radii } from '@/src/theme/tokens';
+import { colors } from '@/src/theme/tokens';
 
 export interface ToggleProps {
   value: boolean;
@@ -15,11 +15,11 @@ export interface ToggleProps {
   accessibilityLabel?: string;
 }
 
-const TRACK_WIDTH = 44;
-const TRACK_HEIGHT = 26;
-const KNOB_SIZE = 20;
+const TRACK_WIDTH = 50;
+const TRACK_HEIGHT = 30;
+const KNOB_SIZE = 24;
 const TRACK_PADDING = 3;
-const TRAVEL_DISTANCE = TRACK_WIDTH - KNOB_SIZE - TRACK_PADDING * 2;
+const TRAVEL_DISTANCE = TRACK_WIDTH - KNOB_SIZE - TRACK_PADDING * 2; // 20px
 
 export const Toggle = React.memo(function Toggle({
   value,
@@ -30,9 +30,8 @@ export const Toggle = React.memo(function Toggle({
   const progress = useSharedValue(value ? 1 : 0);
 
   useEffect(() => {
-    progress.value = withSpring(value ? 1 : 0, {
-      damping: 18,
-      stiffness: 250,
+    progress.value = withTiming(value ? 1 : 0, {
+      duration: 150,
     });
   }, [value, progress]);
 
@@ -46,7 +45,7 @@ export const Toggle = React.memo(function Toggle({
     const backgroundColor = interpolateColor(
       progress.value,
       [0, 1],
-      ['#2A2A2A', colors.accent]
+      [colors.surfaceTrack, colors.accent]
     );
     return {
       backgroundColor,
@@ -58,7 +57,7 @@ export const Toggle = React.memo(function Toggle({
     const backgroundColor = interpolateColor(
       progress.value,
       [0, 1],
-      [colors.textMuted, colors.textInverse]
+      [colors.textMuted, colors.background]
     );
     return {
       transform: [{ translateX }],
@@ -74,6 +73,7 @@ export const Toggle = React.memo(function Toggle({
       accessibilityState={{ checked: value, disabled }}
       accessibilityLabel={accessibilityLabel}
       style={[styles.pressable, disabled && styles.disabled]}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
       <Animated.View style={[styles.track, animatedTrackStyle]}>
         <Animated.View style={[styles.knob, animatedKnobStyle]} />
@@ -84,22 +84,22 @@ export const Toggle = React.memo(function Toggle({
 
 const styles = StyleSheet.create({
   pressable: {
-    width: 52,
-    height: 44,
+    width: TRACK_WIDTH,
+    height: TRACK_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
   },
   track: {
     width: TRACK_WIDTH,
     height: TRACK_HEIGHT,
-    borderRadius: radii.md + 1,
+    borderRadius: 15,
     padding: TRACK_PADDING,
     justifyContent: 'center',
   },
   knob: {
     width: KNOB_SIZE,
     height: KNOB_SIZE,
-    borderRadius: radii.sm + 2,
+    borderRadius: 12,
   },
   disabled: {
     opacity: 0.5,

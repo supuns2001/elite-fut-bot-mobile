@@ -14,8 +14,16 @@ export const colors = {
   surfaceCard: '#141414',
   surfaceInput: '#1E1E1E',
   surfacePill: '#222222',
+  surfaceIconTile: '#222222',
+  surfaceTrack: '#2A2A2A',
   surfaceAccentSubtle: 'rgba(203, 242, 29, 0.1)',
   surfaceAccentSubtleAlt: 'rgba(10, 10, 10, 0.1)',
+
+  // Discord Brand
+  discordCard: '#1A1C33',
+  discordTile: '#5865F2',
+  discordButton: '#4F5BD5',
+  discordSubtext: '#B8BBDD',
 
   // Borders
   border: '#262626',
@@ -43,6 +51,7 @@ export const colors = {
   warningBg: 'rgba(245, 184, 65, 0.12)',
   error: '#FF8A80',
   errorBg: 'rgba(255, 138, 128, 0.12)',
+  danger: '#FF8A80',
   success: '#CBF21D',
   successBg: 'rgba(203, 242, 29, 0.12)',
 
@@ -98,10 +107,14 @@ export const radii = {
   md: 12,
   lg: 14,
   xl: 16,
+  iconTile: 14,
   input: 18,
+  innerRow: 20,
   cardSm: 20,
   card: 22,
   cardLg: 24,
+  listGroup: 24,
+  pillButton: 26,
   cardXl: 28,
   pill: 28,
   tabBar: 30,

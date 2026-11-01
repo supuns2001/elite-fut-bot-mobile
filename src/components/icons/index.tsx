@@ -412,3 +412,153 @@ export const Sun = React.memo(function Sun({
   );
 });
 
+export const DiscordIcon = React.memo(function DiscordIcon({
+  size = 28,
+  color = '#FFFFFF',
+}: IconProps): React.ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <Path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+    </Svg>
+  );
+});
+
+export const Plus = React.memo(function Plus({
+  size = 18,
+  color = colors.textPrimary,
+  strokeWidth = 2.2,
+}: IconProps): React.ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 5v14M5 12h14"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+});
+
+export const Bell = React.memo(function Bell({
+  size = 20,
+  color = colors.accent,
+  strokeWidth = 2,
+}: IconProps): React.ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <G stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <Path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      </G>
+    </Svg>
+  );
+});
+
+export const Vibrate = React.memo(function Vibrate({
+  size = 20,
+  color = colors.accent,
+  strokeWidth = 2,
+}: IconProps): React.ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <G stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M2 8v8M22 8v8M5 5v14M19 5v14" />
+        <Rect x="8" y="4" width="8" height="16" rx="2" />
+      </G>
+    </Svg>
+  );
+});
+
+export const Activity = React.memo(function Activity({
+  size = 20,
+  color = '#FFFFFF',
+  strokeWidth = 2,
+}: IconProps): React.ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M22 12h-4l-3 9L9 3l-3 9H2"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+});
+
+export const Trash = React.memo(function Trash({
+  size = 20,
+  color = '#FFFFFF',
+  strokeWidth = 2,
+}: IconProps): React.ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <G stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        <Path d="M10 11v6M14 11v6" />
+      </G>
+    </Svg>
+  );
+});
+
+export const Globe = React.memo(function Globe({
+  size = 20,
+  color = '#FFFFFF',
+  strokeWidth = 2,
+}: IconProps): React.ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <G stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Circle cx="12" cy="12" r="10" />
+        <Path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </G>
+    </Svg>
+  );
+});
+
+export const FileText = React.memo(function FileText({
+  size = 20,
+  color = '#FFFFFF',
+  strokeWidth = 2,
+}: IconProps): React.ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <G stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <Path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+      </G>
+    </Svg>
+  );
+});
+
+export const Lock = React.memo(function Lock({
+  size = 20,
+  color = '#FFFFFF',
+  strokeWidth = 2,
+}: IconProps): React.ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <G stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Rect x="3" y="11" width="18" height="11" rx="2" />
+        <Path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </G>
+    </Svg>
+  );
+});
+
+export const LogOut = React.memo(function LogOut({
+  size = 20,
+  color = colors.danger,
+  strokeWidth = 2,
+}: IconProps): React.ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <G stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+      </G>
+    </Svg>
+  );
+});
+

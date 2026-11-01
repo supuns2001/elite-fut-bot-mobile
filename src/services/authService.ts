@@ -158,6 +158,48 @@ export const authService = {
     return activeSession;
   },
 
+  async getProfile(): Promise<UserSession | null> {
+    if (!activeSession) {
+      await this.loadPersistedSession();
+    }
+    if (!activeSession?.token) return activeSession;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${activeSession.token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = (await response.json()) as AuthApiResponse;
+        if (data.success && data.user) {
+          const u = data.user;
+          const isTrialValid = u.mobileAccessExpiresAt
+            ? new Date(u.mobileAccessExpiresAt) > new Date()
+            : false;
+
+          activeSession = {
+            ...activeSession,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            email: u.email,
+            role: u.role,
+            hasMobileAccess: u.isPaid || isTrialValid,
+            plan: u.isPaid ? 'mobile' : 'trial',
+            mobileAccessExpiresAt: u.mobileAccessExpiresAt,
+            referralCode: u.referralCode,
+          };
+          await AsyncStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(activeSession));
+        }
+      }
+    } catch {
+      // Keep existing session on offline / network error
+    }
+    return activeSession;
+  },
+
   async signOut(): Promise<void> {
     activeSession = null;
     await AsyncStorage.removeItem(SESSION_STORAGE_KEY);
