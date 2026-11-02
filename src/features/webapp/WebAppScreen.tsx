@@ -21,6 +21,8 @@ import {
   useFutbinScraper,
   FUTBIN_BASE_URL,
 } from '@/src/features/webapp/bot/useFutbinScraper';
+import { authService } from '@/src/services/authService';
+import { API_BASE_URL } from '@/src/config/api';
 
 export function WebAppScreen(): React.ReactElement {
   const insets = useSafeAreaInsets();
@@ -29,6 +31,7 @@ export function WebAppScreen(): React.ReactElement {
   const logSheetRef = useRef<BottomSheetModal>(null);
 
   const [player, setPlayer] = useState<BotPlayerInfoPayload | null>(null);
+  const [backendPrices, setBackendPrices] = useState<{ ps: number; pc: number } | null>(null);
   const [isListing, setIsListing] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('3 cards listed at FUTBIN +5%');
@@ -41,10 +44,52 @@ export function WebAppScreen(): React.ReactElement {
   // useSniperBot needs the bridge, and the bridge onEvent routes through onEventRef
   const onEventRef = useRef<(e: BotPageEvent) => void>(() => {});
   const bridge = useBotBridge(webViewRef, (e) => onEventRef.current(e));
-  const bot = useSniperBot(bridge, {
-    putBotStatus: async () => {},
-    putStats: async () => {},
-  });
+  const backend = React.useMemo(
+    () => ({
+      putBotStatus: async (
+        status: 'idle' | 'running' | 'stopped',
+        extra?: { activeFilters?: unknown; purchase?: { name: string; price: number; tradeId?: number | string } }
+      ) => {
+        try {
+          const token = authService.getCurrentSession()?.token;
+          if (!token) return;
+          await fetch(`${API_BASE_URL}/users/bot-status`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              status,
+              activeFilters: extra?.activeFilters,
+              purchase: extra?.purchase,
+            }),
+          });
+        } catch {
+          // Best-effort background sync, never block bot loop
+        }
+      },
+      putStats: async (delta: { purchases: number; profits: number }) => {
+        try {
+          const token = authService.getCurrentSession()?.token;
+          if (!token) return;
+          await fetch(`${API_BASE_URL}/users/stats`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(delta),
+          });
+        } catch {
+          // Best-effort background sync
+        }
+      },
+    }),
+    []
+  );
+
+  const bot = useSniperBot(bridge, backend);
 
   onEventRef.current = (e) => {
     bot.handlePageEvent(e);
@@ -59,7 +104,23 @@ export function WebAppScreen(): React.ReactElement {
         const platform = bot.userInfo?.platform?.toLowerCase().includes('pc')
           ? 'pc'
           : 'ps';
-        void futbin.fetchPlayerPrice(e.payload.name, e.payload.maskedDefId, platform);
+        const pName = e.payload.name;
+        const pRating = e.payload.rating;
+
+        // 1. Fetch immediately from backend pricing service
+        fetch(
+          `${API_BASE_URL}/prices/player?name=${encodeURIComponent(pName)}&rating=${pRating || ''}`
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success && data.prices) {
+              setBackendPrices(data.prices);
+            }
+          })
+          .catch(() => {});
+
+        // 2. Fetch from FUTBIN scraper
+        void futbin.fetchPlayerPrice(pName, e.payload.maskedDefId, platform);
       }
     } else if (e.type === 'BOT_READY') {
       void bridge.getUserInfo();
@@ -232,9 +293,9 @@ export function WebAppScreen(): React.ReactElement {
         statusText={bot.statusText}
         error={bot.lastError}
         player={player}
-        futbinPrices={futbin.prices}
-        futbinPrice={futbin.currentPrice}
-        isLoadingPrice={futbin.isLoadingPrice}
+        futbinPrices={futbin.prices || backendPrices}
+        futbinPrice={futbin.currentPrice || backendPrices?.ps}
+        isLoadingPrice={futbin.isLoadingPrice && !backendPrices}
         cardsBought={bot.cardsBought}
         profitMade={bot.sessionProfit}
         onStart={handleStartBot}
@@ -283,12 +344,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#0A0A0A',
   },
   hiddenWebView: {
-    width: 0,
-    height: 0,
-    opacity: 0,
+    width: 1,
+    height: 1,
+    opacity: 0.01,
     position: 'absolute',
-    left: -1000,
-    top: -1000,
+    left: -100,
+    top: -100,
     zIndex: -1,
   },
   zeroSize: {

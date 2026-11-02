@@ -65,17 +65,25 @@ export function futbinListStartPrice(futbinPrice: number): number {
   );
 }
 
+export type ListingStrategy = 'fixed' | 'target_profit' | 'futbin_console' | 'futbin_pc';
+
 export interface SniperSettings {
   minPrice: number;
   maxPrice: number;
   preset: SpeedPresetKey;
   autoList: boolean;
-  // FUTBIN/fut.gg price for the user's platform; required when autoList is on
-  // (the mobile UI only offers "list at FUTBIN +5%").
+  listingStrategy?: ListingStrategy;
+  listFixedPrice?: number | null;
+  listTargetProfit?: number | null;
+  // FUTBIN/fut.gg price for the user's platform; required when autoList is on and using futbin strategy.
   futbinPrice: number | null;
   filterMode: boolean;
   actLikeHuman: boolean;
   humanPlusPlus: boolean;
+  cardRating?: number | null;
+  minRating?: number | null;
+  maxRating?: number | null;
+  exactRating?: boolean;
   sleepEveryMinutes: number | null;
   sleepDurationMinutes: number | null;
   purchaseLimit: number | null;
@@ -86,10 +94,17 @@ export const DEFAULT_SNIPER_SETTINGS: SniperSettings = {
   maxPrice: 0,
   preset: 'safe',
   autoList: false,
+  listingStrategy: 'target_profit',
+  listFixedPrice: 1000,
+  listTargetProfit: 250,
   futbinPrice: null,
   filterMode: false,
   actLikeHuman: false,
   humanPlusPlus: false,
+  cardRating: null,
+  minRating: null,
+  maxRating: null,
+  exactRating: false,
   sleepEveryMinutes: 15,
   sleepDurationMinutes: 5,
   purchaseLimit: null,
@@ -230,17 +245,38 @@ export function useSniperBot(bridge: BotBridge, backend: SniperBackend = {}) {
     try {
       if (!isRetry) {
         setLastError(null);
-        addLog('info', `Loop ${loopCountRef.current}: searching ${settings.minPrice}-${settings.maxPrice}`, {
-          kind: 'loop',
-          loop: loopCountRef.current,
-          filterMode: settings.filterMode,
-          minPrice: settings.minPrice,
-          maxPrice: settings.maxPrice,
-        });
+        const ratingSuffix = settings.cardRating
+          ? ` (Rating: ${settings.cardRating}${settings.exactRating ? ' exact' : '+'})`
+          : '';
+        addLog(
+          'info',
+          `Loop ${loopCountRef.current}: searching ${settings.minPrice}-${settings.maxPrice}${ratingSuffix}`,
+          {
+            kind: 'loop',
+            loop: loopCountRef.current,
+            filterMode: settings.filterMode,
+            minPrice: settings.minPrice,
+            maxPrice: settings.maxPrice,
+          }
+        );
       }
 
-      const listStartPrice =
-        settings.autoList && settings.futbinPrice !== null ? futbinListStartPrice(settings.futbinPrice) : null;
+      let listMinPrice: number | null = null;
+      let listMaxPrice: number | null = null;
+      let listFixedPrice: number | null = null;
+      let listTargetProfit: number | null = null;
+
+      if (settings.autoList) {
+        if (settings.listingStrategy === 'fixed' && settings.listFixedPrice) {
+          listFixedPrice = settings.listFixedPrice;
+        } else if (settings.listingStrategy === 'target_profit' && settings.listTargetProfit) {
+          listTargetProfit = settings.listTargetProfit;
+        } else if (settings.futbinPrice !== null) {
+          const listStartPrice = futbinListStartPrice(settings.futbinPrice);
+          listMinPrice = listStartPrice;
+          listMaxPrice = listStartPrice + 100;
+        }
+      }
 
       const response = await bridge.runLoop({
         minPrice: settings.minPrice,
@@ -248,16 +284,16 @@ export function useSniperBot(bridge: BotBridge, backend: SniperBackend = {}) {
         minBid: MIN_BID_VALUES[Math.floor(Math.random() * MIN_BID_VALUES.length)],
         maxBid: 0,
         autoList: settings.autoList,
-        listMinPrice: listStartPrice,
-        listMaxPrice: listStartPrice !== null ? listStartPrice + 100 : null,
-        listTargetProfit: null,
-        listFixedPrice: null,
+        listMinPrice,
+        listMaxPrice,
+        listTargetProfit,
+        listFixedPrice,
         purchaseLimit: settings.purchaseLimit,
         currentPurchases: cardsBoughtRef.current,
         maxPurchasesPerSearch: 1,
-        minRating: null,
+        minRating: settings.exactRating ? null : (settings.cardRating ?? null),
         maxRating: null,
-        cardRating: null,
+        cardRating: settings.exactRating ? (settings.cardRating ?? null) : null,
         actionDelayMs: 1000,
         actLikeHuman: settings.actLikeHuman,
         humanPlusPlus: settings.humanPlusPlus,
@@ -415,8 +451,24 @@ export function useSniperBot(bridge: BotBridge, backend: SniperBackend = {}) {
 
       if (!(settings.minPrice > 0) || !(settings.maxPrice > 0)) return fail('Enter valid min and max prices.');
       if (settings.minPrice > settings.maxPrice) return fail('Min price cannot be greater than max price.');
-      if (settings.autoList && settings.futbinPrice === null) {
-        return fail('FUTBIN price not loaded yet. Wait for the price, or turn off Auto-List.');
+
+      if (settings.autoList) {
+        if (settings.listingStrategy === 'fixed') {
+          if (!settings.listFixedPrice || settings.listFixedPrice <= 0) {
+            return fail('Enter a valid fixed price to auto-list cards.');
+          }
+        } else if (settings.listingStrategy === 'target_profit') {
+          if (!settings.listTargetProfit || settings.listTargetProfit <= 0) {
+            return fail('Enter a valid target profit to auto-list cards.');
+          }
+        } else {
+          // FUTBIN listing
+          if (settings.futbinPrice === null || settings.futbinPrice <= 0) {
+            return fail(
+              'FUTBIN price not loaded yet. Wait for the price or select "List for fixed price" / "List for target profit".'
+            );
+          }
+        }
       }
 
       settingsRef.current = settings;

@@ -5,6 +5,8 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { connectDB } from './config/db';
 import { authRouter } from './routes/auth';
+import { usersRouter } from './routes/users';
+import { pricesRouter } from './routes/prices';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,8 +31,10 @@ app.get('/api/health', (_req: Request, res: Response) => {
   });
 });
 
-// Authentication routes
+// Routes
 app.use('/api/auth', authRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/prices', pricesRouter);
 
 // Connect to MongoDB
 void connectDB();

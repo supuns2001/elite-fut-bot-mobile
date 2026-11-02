@@ -3,11 +3,7 @@ import type { WebView, WebViewMessageEvent } from 'react-native-webview';
 
 export const FUTBIN_BASE_URL = 'https://www.futbin.com';
 
-export const FC_YEAR = (() => {
-  const now = new Date();
-  const year = now.getFullYear() + (now.getMonth() >= 8 ? 1 : 0);
-  return year.toString().slice(2, 4);
-})();
+export const FC_YEAR = '25';
 
 export interface FutbinPrices {
   ps: number | null;
@@ -201,7 +197,7 @@ export function useFutbinScraper() {
       setIsLoadingPrice(true);
       try {
         const encoded = encodeURIComponent(playerName.trim());
-        const searchUrl = `${FUTBIN_BASE_URL}/players/search?query=${encoded}&year=${FC_YEAR}`;
+        const searchUrl = `${FUTBIN_BASE_URL}/search?year=${FC_YEAR}&term=${encoded}`;
 
         const searchRes = await executeFetchInWebView(searchUrl);
         if (!searchRes.ok || !searchRes.text) {
@@ -226,47 +222,65 @@ export function useFutbinScraper() {
         let matchedPlayer = playersList[0];
         if (maskedDefId) {
           const idMatch = playersList.find((p) => {
-            const imgUrl: string = p.playerImage?.fixed?.url?.image1x || '';
-            const m = imgUrl.match(/\/players\/(\d+)\.png/);
-            const futId = m ? parseInt(m[1], 10) : null;
-            return futId === maskedDefId || p.id === maskedDefId;
+            const pId = parseInt(p.id, 10);
+            return pId === maskedDefId || p.player_id === maskedDefId;
           });
           if (idMatch) matchedPlayer = idMatch;
         }
 
-        let playerPageUrl = matchedPlayer.location?.url;
-        if (!playerPageUrl && matchedPlayer.id) {
-          playerPageUrl = `/player/${matchedPlayer.id}/${matchedPlayer.slug || 'player'}`;
+        // Check if price is present directly in search result
+        const directPrice = matchedPlayer.price
+          ? parseInt(String(matchedPlayer.price).replace(/[^\d]/g, ''), 10)
+          : null;
+
+        if (directPrice && directPrice > 0) {
+          const directPs = directPrice;
+          const directPc = Math.round(directPrice * 1.05);
+          const directPrices: FutbinPrices = { ps: directPs, pc: directPc };
+          setPrices(directPrices);
+          const chosen = platform === 'pc' ? directPc : directPs;
+          setCurrentPrice(chosen);
         }
 
-        if (!playerPageUrl) {
-          setIsLoadingPrice(false);
-          return null;
+        // Query playerPrices endpoint for granular console vs PC separation
+        if (matchedPlayer.id) {
+          try {
+            const pricesUrl = `${FUTBIN_BASE_URL}/${FC_YEAR}/playerPrices?player=${matchedPlayer.id}`;
+            const priceRes = await executeFetchInWebView(pricesUrl);
+            if (priceRes.ok && priceRes.text) {
+              const priceData = JSON.parse(priceRes.text);
+              const playerPricesObj = priceData[matchedPlayer.id]?.prices;
+              if (playerPricesObj) {
+                const parseLC = (val: any): number | null => {
+                  if (!val?.LCPrice) return null;
+                  const num = parseInt(String(val.LCPrice).replace(/[^\d]/g, ''), 10);
+                  return !isNaN(num) && num > 0 ? num : null;
+                };
+                const ps = parseLC(playerPricesObj.ps) ?? parseLC(playerPricesObj.xbox) ?? directPrice;
+                const pc = parseLC(playerPricesObj.pc) ?? (ps ? Math.round(ps * 1.05) : null);
+                if (ps || pc) {
+                  const detailedPrices: FutbinPrices = { ps, pc };
+                  setPrices(detailedPrices);
+                  const chosen = platform === 'pc' ? pc : ps;
+                  setCurrentPrice(chosen);
+                  setIsLoadingPrice(false);
+                  return chosen;
+                }
+              }
+            }
+          } catch {
+            // Keep directPrice if detailed query failed
+          }
         }
 
-        const fullPageUrl = playerPageUrl.startsWith('http')
-          ? playerPageUrl
-          : `${FUTBIN_BASE_URL}${playerPageUrl}`;
-
-        const pageRes = await executeFetchInWebView(fullPageUrl);
-        if (!pageRes.ok || !pageRes.text) {
-          setIsLoadingPrice(false);
-          return null;
-        }
-
-        const extracted = extractFutbinPrices(pageRes.text);
-        setPrices(extracted);
-
-        const chosenPrice = platform === 'pc' ? extracted.pc : (extracted.ps ?? extracted.pc);
-        setCurrentPrice(chosenPrice);
         setIsLoadingPrice(false);
-        return chosenPrice;
-      } catch (err) {
+        return currentPrice;
+      } catch {
         setIsLoadingPrice(false);
         return null;
       }
     },
-    [executeFetchInWebView]
+    [currentPrice, executeFetchInWebView]
   );
 
   return {

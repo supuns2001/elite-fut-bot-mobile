@@ -81,14 +81,24 @@ export const ControlsPlayerCard = React.memo(function ControlsPlayerCard({
             <Text style={styles.sourceName}>FUT.GG</Text>
           </View>
           <View style={styles.colPlatform}>
-            <Text style={styles.coinPrice}>
-              {isLoadingPrices ? '…' : consoleFutgg}
-            </Text>
+            <View style={styles.priceWithCoin}>
+              {consoleFutgg !== '—' && !isLoadingPrices ? (
+                <Text style={styles.coinIcon}>©</Text>
+              ) : null}
+              <Text style={styles.coinPrice}>
+                {isLoadingPrices ? '…' : consoleFutgg}
+              </Text>
+            </View>
           </View>
           <View style={styles.colPlatform}>
-            <Text style={styles.coinPrice}>
-              {isLoadingPrices ? '…' : pcFutgg}
-            </Text>
+            <View style={styles.priceWithCoin}>
+              {pcFutgg !== '—' && !isLoadingPrices ? (
+                <Text style={styles.coinIcon}>©</Text>
+              ) : null}
+              <Text style={styles.coinPrice}>
+                {isLoadingPrices ? '…' : pcFutgg}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -98,14 +108,24 @@ export const ControlsPlayerCard = React.memo(function ControlsPlayerCard({
             <Text style={styles.sourceName}>FUTBIN</Text>
           </View>
           <View style={styles.colPlatform}>
-            <Text style={styles.coinPriceLime}>
-              {isLoadingPrices ? '…' : consoleFutbin}
-            </Text>
+            <View style={styles.priceWithCoin}>
+              {consoleFutbin !== '—' && !isLoadingPrices ? (
+                <Text style={styles.coinIconLime}>©</Text>
+              ) : null}
+              <Text style={styles.coinPriceLime}>
+                {isLoadingPrices ? '…' : consoleFutbin}
+              </Text>
+            </View>
           </View>
           <View style={styles.colPlatform}>
-            <Text style={styles.coinPriceLime}>
-              {isLoadingPrices ? '…' : pcFutbin}
-            </Text>
+            <View style={styles.priceWithCoin}>
+              {pcFutbin !== '—' && !isLoadingPrices ? (
+                <Text style={styles.coinIconLime}>©</Text>
+              ) : null}
+              <Text style={styles.coinPriceLime}>
+                {isLoadingPrices ? '…' : pcFutbin}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -225,6 +245,21 @@ const styles = StyleSheet.create({
   coinPriceLime: {
     fontFamily: fonts.monoBold,
     fontSize: 12,
+    color: colors.accent,
+  },
+  priceWithCoin: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  coinIcon: {
+    fontFamily: fonts.monoBold,
+    fontSize: 10,
+    color: '#E5E5EA',
+  },
+  coinIconLime: {
+    fontFamily: fonts.monoBold,
+    fontSize: 10,
     color: colors.accent,
   },
   filterBanner: {

@@ -132,15 +132,38 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
         return;
       }
 
+      const numericMinPrice = Number(minPrice) || 1;
+      if (numericMinPrice > numericMaxPrice) {
+        setLocalError('Min price cannot be greater than Max price.');
+        return;
+      }
+
+      const parsedRating = cardRating.trim() ? parseInt(cardRating, 10) : null;
+      const parsedFixed = fixedPrice.trim() ? parseInt(fixedPrice, 10) : null;
+      const parsedProfit = targetProfit.trim() ? parseInt(targetProfit, 10) : null;
+
+      // Select relevant FUTBIN price for platform
+      let activeFutbinPrice: number | null = null;
+      if (listingStrategy === 'futbin_pc') {
+        activeFutbinPrice = futbinPrices?.pc ?? futbinPrice ?? null;
+      } else {
+        activeFutbinPrice = futbinPrices?.ps ?? futbinPrice ?? null;
+      }
+
       if (onStart) {
         const settings: SniperSettings = {
           ...DEFAULT_SNIPER_SETTINGS,
-          minPrice: Number(minPrice) || 1,
+          minPrice: numericMinPrice,
           maxPrice: numericMaxPrice,
           preset: selectedPreset,
           autoList: listAutomatically,
-          futbinPrice: listAutomatically ? (futbinPrices?.ps ?? futbinPrice ?? null) : null,
+          listingStrategy,
+          listFixedPrice: parsedFixed,
+          listTargetProfit: parsedProfit,
+          futbinPrice: listAutomatically ? activeFutbinPrice : null,
           filterMode: mode === 'filter',
+          cardRating: parsedRating,
+          exactRating,
           actLikeHuman,
           humanPlusPlus: humanPlus,
         };
@@ -155,16 +178,21 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
       isRunning,
       maxPrice,
       minPrice,
-      onStart,
-      onStop,
-      onToggleRun,
+      cardRating,
+      exactRating,
       selectedPreset,
       listAutomatically,
+      listingStrategy,
+      fixedPrice,
+      targetProfit,
       futbinPrices,
       futbinPrice,
       mode,
       actLikeHuman,
       humanPlus,
+      onStart,
+      onStop,
+      onToggleRun,
     ]);
 
     // Speed confirmation tag matching extension
