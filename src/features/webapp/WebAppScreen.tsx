@@ -232,8 +232,11 @@ export function WebAppScreen(): React.ReactElement {
         statusText={bot.statusText}
         error={bot.lastError}
         player={player}
+        futbinPrices={futbin.prices}
         futbinPrice={futbin.currentPrice}
         isLoadingPrice={futbin.isLoadingPrice}
+        cardsBought={bot.cardsBought}
+        profitMade={bot.sessionProfit}
         onStart={handleStartBot}
         onStop={handleStopBot}
         onOpenActivityLog={handleOpenActivityLog}
