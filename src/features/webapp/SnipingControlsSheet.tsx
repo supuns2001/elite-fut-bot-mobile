@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useState } from 'react';
+import React, { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   BottomSheetBackdrop,
@@ -8,12 +8,24 @@ import {
 } from '@gorhom/bottom-sheet';
 import { Close } from '@/src/components/icons';
 import { colors, fonts, fontSizes, radii, spacing } from '@/src/theme/tokens';
-import { SnipingStopwatchButton } from '@/src/features/webapp/SnipingStopwatchButton';
+import {
+  ControlsModeTabs,
+  type SnipingMode,
+} from '@/src/features/webapp/controls/ControlsModeTabs';
+import { ControlsPlayerCard } from '@/src/features/webapp/controls/ControlsPlayerCard';
+import { ControlsAdvancedModeRow } from '@/src/features/webapp/controls/ControlsAdvancedModeRow';
+import { ControlsPriceInputs } from '@/src/features/webapp/controls/ControlsPriceInputs';
+import {
+  ControlsListingOptions,
+  type ListingStrategy,
+} from '@/src/features/webapp/controls/ControlsListingOptions';
+import { ControlsStatsStrip } from '@/src/features/webapp/controls/ControlsStatsStrip';
 import {
   SpeedPresetSelector,
   type SpeedPresetKey,
 } from '@/src/features/webapp/SpeedPresetSelector';
-import { SnipingTargetInputs, type PlayerInfo } from '@/src/features/webapp/SnipingTargetInputs';
+import type { PlayerInfo } from '@/src/features/webapp/SnipingTargetInputs';
+import type { FutbinPrices } from '@/src/features/webapp/bot/useFutbinScraper';
 import {
   DEFAULT_SNIPER_SETTINGS,
   type SniperSettings,
@@ -26,8 +38,11 @@ export interface SnipingControlsSheetProps {
   statusText?: string;
   error?: string | null;
   player?: PlayerInfo | null;
+  futbinPrices?: FutbinPrices | null;
   futbinPrice?: number | null;
   isLoadingPrice?: boolean;
+  cardsBought?: number;
+  profitMade?: number;
   onStart?: (settings: SniperSettings) => Promise<string | null>;
   onStop?: () => void;
   onToggleRun?: () => void;
@@ -40,12 +55,15 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
     {
       isRunning,
       loops,
-      elapsedSeconds,
+      elapsedSeconds = 0,
       statusText,
       error,
       player,
+      futbinPrices,
       futbinPrice,
       isLoadingPrice,
+      cardsBought = 0,
+      profitMade = 0,
       onStart,
       onStop,
       onToggleRun,
@@ -54,10 +72,28 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
     },
     ref
   ): React.ReactElement {
+    // Mode
+    const [mode, setMode] = useState<SnipingMode>('single');
+
+    // Price & Rating Inputs
+    const [minPrice, setMinPrice] = useState('1');
     const [maxPrice, setMaxPrice] = useState('15000');
+    const [cardRating, setCardRating] = useState('');
+    const [exactRating, setExactRating] = useState(false);
     const [needPrice, setNeedPrice] = useState(false);
+
+    // Speed Preset
     const [selectedPreset, setSelectedPreset] = useState<SpeedPresetKey>('safe');
-    const [autoList, setAutoList] = useState(false);
+
+    // Listing Options
+    const [actLikeHuman, setActLikeHuman] = useState(false);
+    const [humanPlus, setHumanPlus] = useState(false);
+    const [listAutomatically, setListAutomatically] = useState(false);
+    const [listingStrategy, setListingStrategy] = useState<ListingStrategy>('target_profit');
+    const [fixedPrice, setFixedPrice] = useState('1000');
+    const [targetProfit, setTargetProfit] = useState('250');
+
+    // Errors
     const [localError, setLocalError] = useState<string | null>(null);
 
     const renderBackdrop = useCallback(
@@ -73,8 +109,7 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
     );
 
     const handleMaxPriceChange = useCallback((text: string) => {
-      const numeric = text.replace(/[^0-9]/g, '');
-      setMaxPrice(numeric);
+      setMaxPrice(text);
       setNeedPrice(false);
       setLocalError(null);
     }, []);
@@ -100,10 +135,14 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
       if (onStart) {
         const settings: SniperSettings = {
           ...DEFAULT_SNIPER_SETTINGS,
+          minPrice: Number(minPrice) || 1,
           maxPrice: numericMaxPrice,
           preset: selectedPreset,
-          autoList,
-          futbinPrice: autoList ? (futbinPrice ?? null) : null,
+          autoList: listAutomatically,
+          futbinPrice: listAutomatically ? (futbinPrices?.ps ?? futbinPrice ?? null) : null,
+          filterMode: mode === 'filter',
+          actLikeHuman,
+          humanPlusPlus: humanPlus,
         };
         const startErr = await onStart(settings);
         if (startErr) {
@@ -112,13 +151,41 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
       } else if (onToggleRun) {
         onToggleRun();
       }
-    }, [isRunning, maxPrice, onStart, onStop, onToggleRun, selectedPreset, autoList, futbinPrice]);
+    }, [
+      isRunning,
+      maxPrice,
+      minPrice,
+      onStart,
+      onStop,
+      onToggleRun,
+      selectedPreset,
+      listAutomatically,
+      futbinPrices,
+      futbinPrice,
+      mode,
+      actLikeHuman,
+      humanPlus,
+    ]);
 
-    const loopText = isRunning ? `Loop ${loops}` : 'Idle';
-    const loopChipStyle = [styles.loopChipText, isRunning ? styles.loopLime : styles.loopGray];
+    // Speed confirmation tag matching extension
+    const rpmText = useMemo(() => {
+      if (selectedPreset === 'safe') return '3 rounds per min';
+      if (selectedPreset === 'caution') return '6 rounds per min';
+      return '9 rounds per min';
+    }, [selectedPreset]);
+
+    const formattedTimer = useMemo(() => {
+      const mins = Math.floor(elapsedSeconds / 60);
+      const secs = elapsedSeconds % 60;
+      const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+      return `${pad(mins)}:${pad(secs)}`;
+    }, [elapsedSeconds]);
+
+    const statusBadgeText = isRunning ? `RUNNING · ${loops}` : 'STOPPED';
     const displayError = localError || error;
 
-    const snapPoints = React.useMemo(() => ['78%'], []);
+    // Use generous snap point for smooth scrolling of comprehensive controls
+    const snapPoints = useMemo(() => ['88%'], []);
 
     return (
       <BottomSheetModal
@@ -130,10 +197,17 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
         backgroundStyle={styles.sheetBackground}
         handleIndicatorStyle={styles.handleIndicator}
       >
+        {/* Modal Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Sniping controls</Text>
           <View style={styles.headerRightRow}>
-            <Text style={loopChipStyle}>{loopText}</Text>
+            <View style={[styles.statusBadge, isRunning ? styles.badgeRunning : styles.badgeStopped]}>
+              <View style={[styles.statusDot, isRunning ? styles.dotGreen : styles.dotGrey]} />
+              <Text style={[styles.statusBadgeText, isRunning ? styles.textGreen : styles.textGrey]}>
+                {statusBadgeText}
+              </Text>
+            </View>
+
             <Pressable
               onPress={onClose}
               accessibilityRole="button"
@@ -145,6 +219,7 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
           </View>
         </View>
 
+        {/* Scrollable Controls Body */}
         <BottomSheetScrollView
           contentContainerStyle={styles.bodyScroll}
           showsVerticalScrollIndicator={false}
@@ -155,41 +230,101 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
             </View>
           ) : null}
 
-          <SnipingTargetInputs
-            playerInfo={player}
-            maxPrice={maxPrice}
-            onMaxPriceChange={handleMaxPriceChange}
-            needPrice={needPrice}
-            autoList={autoList}
-            onAutoListChange={setAutoList}
+          {/* 1. Mode Tabs (Single Player vs Filter Snipe) */}
+          <ControlsModeTabs
+            mode={mode}
+            onSelectMode={setMode}
             isRunning={isRunning}
-            loops={loops}
-            statusText={statusText}
-            futbinPrice={futbinPrice}
-            isLoadingPrice={isLoadingPrice}
           />
 
+          {/* 2. Target Player Card & Multi-Platform Price Grid */}
+          <ControlsPlayerCard
+            mode={mode}
+            player={player}
+            futbinPrices={futbinPrices}
+            isLoadingPrices={isLoadingPrice}
+          />
+
+          {/* 3. Advanced Mode Row with Coming Soon Badge */}
+          <ControlsAdvancedModeRow />
+
+          {/* 4. Speed Preset Selector (Safe / Caution / Risky) */}
           <SpeedPresetSelector
             selectedPreset={selectedPreset}
             onSelectPreset={setSelectedPreset}
           />
-        </BottomSheetScrollView>
 
-        <View style={styles.footerActions}>
-          <SnipingStopwatchButton
-            isRunning={isRunning}
-            elapsedSeconds={elapsedSeconds}
-            onToggle={handleRunPress}
+          {/* 5. Buy Now Price (Min/Max) & Rating Filter with RPM confirmation */}
+          <ControlsPriceInputs
+            minPrice={minPrice}
+            onMinPriceChange={setMinPrice}
+            maxPrice={maxPrice}
+            onMaxPriceChange={handleMaxPriceChange}
+            cardRating={cardRating}
+            onCardRatingChange={setCardRating}
+            exactRating={exactRating}
+            onExactRatingChange={setExactRating}
+            needPrice={needPrice}
+            rpmText={rpmText}
           />
 
-          <Pressable
-            onPress={onOpenActivityLog}
-            accessibilityRole="button"
-            accessibilityLabel="Open Activity log"
-            style={styles.activityLogButton}
-          >
-            <Text style={styles.activityLogText}>Activity log</Text>
-          </Pressable>
+          {/* 6. Comprehensive Listing Options */}
+          <ControlsListingOptions
+            actLikeHuman={actLikeHuman}
+            onActLikeHumanChange={setActLikeHuman}
+            humanPlus={humanPlus}
+            onHumanPlusChange={setHumanPlus}
+            listAutomatically={listAutomatically}
+            onListAutomaticallyChange={setListAutomatically}
+            strategy={listingStrategy}
+            onStrategyChange={setListingStrategy}
+            fixedPrice={fixedPrice}
+            onFixedPriceChange={setFixedPrice}
+            targetProfit={targetProfit}
+            onTargetProfitChange={setTargetProfit}
+          />
+        </BottomSheetScrollView>
+
+        {/* Sticky Footer: Action Buttons & Live Stats Strip */}
+        <View style={styles.footerActions}>
+          <View style={styles.actionButtonsRow}>
+            {/* Open Console Button */}
+            <Pressable
+              onPress={onOpenActivityLog}
+              accessibilityRole="button"
+              accessibilityLabel="Open Activity log Console"
+              style={styles.consoleButton}
+            >
+              <Text style={styles.consoleButtonText}>OPEN CONSOLE</Text>
+            </Pressable>
+
+            {/* Start / Stop Button */}
+            <Pressable
+              onPress={handleRunPress}
+              accessibilityRole="button"
+              accessibilityLabel={isRunning ? 'Stop Bot' : 'Start Bot'}
+              style={[
+                styles.startButton,
+                isRunning ? styles.stopButton : styles.startLimeButton,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.startButtonText,
+                  isRunning ? styles.stopButtonText : null,
+                ]}
+              >
+                {isRunning ? `STOP (${formattedTimer})` : 'START'}
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Live Session Stats Strip */}
+          <ControlsStatsStrip
+            cardsBought={cardsBought}
+            elapsedSeconds={elapsedSeconds}
+            profitMade={profitMade}
+          />
         </View>
       </BottomSheetModal>
     );
@@ -214,7 +349,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xs,
     paddingBottom: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#222222',
+    borderBottomColor: '#1E1E1E',
   },
   headerTitle: {
     fontFamily: fonts.semiBold,
@@ -226,20 +361,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
   },
-  loopChipText: {
-    fontFamily: fonts.monoMedium,
-    fontSize: fontSizes.xs,
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: radii.sm,
-    overflow: 'hidden',
   },
-  loopLime: {
+  badgeRunning: {
     backgroundColor: 'rgba(0, 229, 153, 0.12)',
+  },
+  badgeStopped: {
+    backgroundColor: '#1E1E1E',
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  dotGreen: {
+    backgroundColor: colors.accent,
+  },
+  dotGrey: {
+    backgroundColor: '#888888',
+  },
+  statusBadgeText: {
+    fontFamily: fonts.monoMedium,
+    fontSize: 11,
+  },
+  textGreen: {
     color: colors.accent,
   },
-  loopGray: {
-    backgroundColor: '#222222',
+  textGrey: {
     color: '#888888',
   },
   closeCircle: {
@@ -252,8 +406,8 @@ const styles = StyleSheet.create({
   },
   bodyScroll: {
     paddingHorizontal: spacing.xxxl,
-    paddingTop: spacing.xxl,
-    paddingBottom: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   errorBanner: {
     backgroundColor: 'rgba(255, 68, 68, 0.15)',
@@ -272,24 +426,52 @@ const styles = StyleSheet.create({
   footerActions: {
     paddingHorizontal: spacing.xxxl,
     paddingTop: spacing.md,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.md,
+    paddingBottom: spacing.xxl,
     borderTopWidth: 1,
-    borderTopColor: '#222222',
+    borderTopColor: '#1E1E1E',
     backgroundColor: '#111111',
   },
-  activityLogButton: {
+  actionButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  consoleButton: {
+    flex: 1,
     height: 48,
-    borderRadius: radii.md,
+    borderRadius: radii.full,
     borderWidth: 1,
     borderColor: '#333333',
+    backgroundColor: '#1E1E1E',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent',
   },
-  activityLogText: {
-    fontFamily: fonts.medium,
-    fontSize: fontSizes.sm,
+  consoleButtonText: {
+    fontFamily: fonts.semiBold,
+    fontSize: fontSizes.xs,
+    letterSpacing: 0.5,
     color: '#D4D4D4',
+  },
+  startButton: {
+    flex: 1.2,
+    height: 48,
+    borderRadius: radii.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  startLimeButton: {
+    backgroundColor: colors.accent,
+  },
+  stopButton: {
+    backgroundColor: '#FF3B30',
+  },
+  startButtonText: {
+    fontFamily: fonts.bold,
+    fontSize: fontSizes.sm,
+    letterSpacing: 0.5,
+    color: '#000000',
+  },
+  stopButtonText: {
+    color: '#FFFFFF',
   },
 });
