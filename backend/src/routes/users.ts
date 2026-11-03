@@ -104,3 +104,46 @@ usersRouter.get('/stats', authenticate, async (req: AuthRequest, res: Response):
   }
 });
 
+/**
+ * GET /api/users/recent-purchases
+ * Returns the user's past purchases / activity history from MongoDB
+ */
+usersRouter.get('/recent-purchases', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const user = req.user!;
+    res.json({
+      success: true,
+      recentPurchases: Array.isArray(user.recentPurchases) ? user.recentPurchases : [],
+      lastSnipeAt: user.lastSnipeAt,
+      botStatus: user.botStatus,
+    });
+  } catch (error: any) {
+    console.error('❌ Failed to fetch recent purchases:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch recent purchases' });
+  }
+});
+
+/**
+ * POST /api/users/clear-session
+ * Resets the user's active bot session state and filters in MongoDB
+ */
+usersRouter.post('/clear-session', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const user = req.user!;
+    user.botStatus = 'idle';
+    user.runningSince = null;
+    user.activeFilters = null;
+    user.lastSeenAt = new Date();
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Bot session and cached state cleared successfully',
+      botStatus: user.botStatus,
+    });
+  } catch (error: any) {
+    console.error('❌ Failed to clear session:', error);
+    res.status(500).json({ success: false, message: 'Failed to clear session' });
+  }
+});
+

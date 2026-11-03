@@ -79,6 +79,8 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
     const [minPrice, setMinPrice] = useState('1');
     const [maxPrice, setMaxPrice] = useState('15000');
     const [cardRating, setCardRating] = useState('');
+    const [minRating, setMinRating] = useState('');
+    const [maxRating, setMaxRating] = useState('');
     const [exactRating, setExactRating] = useState(false);
     const [needPrice, setNeedPrice] = useState(false);
 
@@ -139,6 +141,9 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
       }
 
       const parsedRating = cardRating.trim() ? parseInt(cardRating, 10) : null;
+      const parsedMinRating = minRating.trim() ? parseInt(minRating, 10) : null;
+      const parsedMaxRating = maxRating.trim() ? parseInt(maxRating, 10) : null;
+
       const parsedFixed = fixedPrice.trim() ? parseInt(fixedPrice, 10) : null;
       const parsedProfit = targetProfit.trim() ? parseInt(targetProfit, 10) : null;
 
@@ -162,7 +167,9 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
           listTargetProfit: parsedProfit,
           futbinPrice: listAutomatically ? activeFutbinPrice : null,
           filterMode: mode === 'filter',
-          cardRating: parsedRating,
+          cardRating: exactRating ? parsedRating : null,
+          minRating: exactRating ? null : parsedMinRating,
+          maxRating: exactRating ? null : parsedMaxRating,
           exactRating,
           actLikeHuman,
           humanPlusPlus: humanPlus,
@@ -179,6 +186,8 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
       maxPrice,
       minPrice,
       cardRating,
+      minRating,
+      maxRating,
       exactRating,
       selectedPreset,
       listAutomatically,
@@ -290,6 +299,10 @@ export const SnipingControlsSheet = forwardRef<BottomSheetModal, SnipingControls
             onMaxPriceChange={handleMaxPriceChange}
             cardRating={cardRating}
             onCardRatingChange={setCardRating}
+            minRating={minRating}
+            onMinRatingChange={setMinRating}
+            maxRating={maxRating}
+            onMaxRatingChange={setMaxRating}
             exactRating={exactRating}
             onExactRatingChange={setExactRating}
             needPrice={needPrice}

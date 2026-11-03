@@ -488,6 +488,24 @@ export const Activity = React.memo(function Activity({
   );
 });
 
+export const Terminal = React.memo(function Terminal({
+  size = 20,
+  color = '#FFFFFF',
+  strokeWidth = 2,
+}: IconProps): React.ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M5 7l5 5-5 5M12 17h7"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+});
+
 export const Trash = React.memo(function Trash({
   size = 20,
   color = '#FFFFFF',

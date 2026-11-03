@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
+import * as Haptics from 'expo-haptics';
+import { preferencesService } from '@/src/services/preferencesService';
+import { activityLogService } from '@/src/services/activityLogService';
 import type { BotBridge } from '@/src/features/webapp/bot/useBotBridge';
 import type {
   BotLogDetail,
@@ -167,12 +170,16 @@ export function useSniperBot(bridge: BotBridge, backend: SniperBackend = {}) {
     } else {
       lastLoggedErrorRef.current = null;
     }
-    setLogs((prev) =>
-      [
-        ...prev,
-        { id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, time: new Date(), level, message, detail },
-      ].slice(-1000) // MAX_LOG_COUNT
-    );
+    const now = new Date();
+    const entry = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      time: now,
+      level,
+      message,
+      detail,
+    };
+    setLogs((prev) => [...prev, entry].slice(-1000));
+    activityLogService.addLog({ level, message, detail, time: now });
   }, []);
 
   const pushBotStatus: NonNullable<SniperBackend['putBotStatus']> = useCallback(async (status, extra) => {
@@ -245,9 +252,18 @@ export function useSniperBot(bridge: BotBridge, backend: SniperBackend = {}) {
     try {
       if (!isRetry) {
         setLastError(null);
-        const ratingSuffix = settings.cardRating
-          ? ` (Rating: ${settings.cardRating}${settings.exactRating ? ' exact' : '+'})`
-          : '';
+        let ratingSuffix = '';
+        if (settings.exactRating && settings.cardRating) {
+          ratingSuffix = ` (Rating: ${settings.cardRating} exact)`;
+        } else if (!settings.exactRating && (settings.minRating || settings.maxRating)) {
+          if (settings.minRating && settings.maxRating) {
+            ratingSuffix = ` (Rating: ${settings.minRating}–${settings.maxRating})`;
+          } else if (settings.minRating) {
+            ratingSuffix = ` (Rating: ≥${settings.minRating})`;
+          } else if (settings.maxRating) {
+            ratingSuffix = ` (Rating: ≤${settings.maxRating})`;
+          }
+        }
         addLog(
           'info',
           `Loop ${loopCountRef.current}: searching ${settings.minPrice}-${settings.maxPrice}${ratingSuffix}`,
@@ -291,8 +307,8 @@ export function useSniperBot(bridge: BotBridge, backend: SniperBackend = {}) {
         purchaseLimit: settings.purchaseLimit,
         currentPurchases: cardsBoughtRef.current,
         maxPurchasesPerSearch: 1,
-        minRating: settings.exactRating ? null : (settings.cardRating ?? null),
-        maxRating: null,
+        minRating: settings.exactRating ? null : (settings.minRating ?? null),
+        maxRating: settings.exactRating ? null : (settings.maxRating ?? null),
         cardRating: settings.exactRating ? (settings.cardRating ?? null) : null,
         actionDelayMs: 1000,
         actLikeHuman: settings.actLikeHuman,
@@ -487,7 +503,9 @@ export function useSniperBot(bridge: BotBridge, backend: SniperBackend = {}) {
       setSessionProfit(0);
       setLastError(null);
       addLog('info', 'Bot started', { kind: 'start' });
-      void activateKeepAwakeAsync(KEEP_AWAKE_TAG);
+      if (preferencesService.getPreferencesSync().keepAwake) {
+        void activateKeepAwakeAsync(KEEP_AWAKE_TAG);
+      }
       void pushBotStatus('running', { activeFilters: settings });
 
       queueNextLoop(0);
@@ -509,9 +527,22 @@ export function useSniperBot(bridge: BotBridge, backend: SniperBackend = {}) {
       } else if (event.type === 'BOT_PURCHASE') {
         const { name, rating, price, tradeId } = event.payload;
         const settings = settingsRef.current;
+        const prefs = preferencesService.getPreferencesSync();
+
+        if (prefs.haptics) {
+          try {
+            void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          } catch {
+            // Safe fallback if device haptics not available
+          }
+        }
+
         // Filter Snipe logs its own "Sniped ..." entry (botLogic.ts).
         if (!settings.filterMode) {
-          addLog('success', `${name} bought for ${price}`, {
+          const logMsg = prefs.purchaseAlerts
+            ? `🔔 Snipe Alert: ${name} bought for ${price}`
+            : `${name} bought for ${price}`;
+          addLog('success', logMsg, {
             kind: 'snipe',
             name,
             rating,
@@ -528,7 +559,10 @@ export function useSniperBot(bridge: BotBridge, backend: SniperBackend = {}) {
     [addLog, pushBotStatus]
   );
 
-  const clearLogs = useCallback(() => setLogs([]), []);
+  const clearLogs = useCallback(() => {
+    setLogs([]);
+    activityLogService.clearLogs();
+  }, []);
 
   return {
     isRunning,

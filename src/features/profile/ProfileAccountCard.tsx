@@ -38,24 +38,20 @@ export const ProfileAccountCard = React.memo(function ProfileAccountCard({
   }, [session]);
 
   const planName = useMemo(() => {
-    return session?.plan === 'mobile' ? 'Pro Mobile Plan' : '2-Day Free Trial';
+    return session?.plan === 'mobile' ? 'Pro Sniper + Mobile' : '2-Day Free Trial';
   }, [session?.plan]);
 
   const expiryDateFormatted = useMemo(() => {
     if (session?.mobileAccessExpiresAt) {
       const d = new Date(session.mobileAccessExpiresAt);
-      return d.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
+      const month = d.toLocaleDateString('en-US', { month: 'short' });
+      const year = d.getFullYear();
+      return `${month} ${year}`;
     }
-    return 'Dec 31, 2026';
+    return 'Dec 2026';
   }, [session?.mobileAccessExpiresAt]);
 
-  const statusLine = isUpToDate
-    ? `Up to date · Active until ${expiryDateFormatted}`
-    : `Active until ${expiryDateFormatted}`;
+  const statusLine = `Active until ${expiryDateFormatted}`;
 
   return (
     <View style={styles.card}>

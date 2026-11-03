@@ -12,6 +12,8 @@ import { useRouter } from 'expo-router';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { LogOut } from '@/src/components/icons';
 import { authService, UserSession } from '@/src/services/authService';
+import { cacheService } from '@/src/services/cacheService';
+import { activityLogService } from '@/src/services/activityLogService';
 import { colors, fonts, fontSizes, radii, spacing } from '@/src/theme/tokens';
 import { ProfileAccountCard } from '@/src/features/profile/ProfileAccountCard';
 import { ProfilePreferencesGroup } from '@/src/features/profile/ProfilePreferencesGroup';
@@ -50,8 +52,13 @@ export default function ProfileTabRoute(): React.ReactElement {
     clearCacheSheetRef.current?.present();
   }, []);
 
-  const handleConfirmClearCache = useCallback(() => {
+  const handleConfirmClearCache = useCallback(async () => {
     clearCacheSheetRef.current?.dismiss();
+    try {
+      await cacheService.clearCacheAndSession();
+    } catch (e) {
+      console.warn('Clear cache error:', e);
+    }
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
@@ -69,6 +76,7 @@ export default function ProfileTabRoute(): React.ReactElement {
         text: 'Sign out',
         style: 'destructive',
         onPress: async () => {
+          activityLogService.clearLogs();
           await authService.signOut();
           router.replace('/intro');
         },
@@ -132,7 +140,7 @@ export default function ProfileTabRoute(): React.ReactElement {
         </Pressable>
 
         {/* 5. Version text: Geist Mono 11, muted, centered */}
-        <Text style={styles.versionText}>EliteFutBot v1.0.0 (build 57)</Text>
+        <Text style={styles.versionText}>EliteFutBot Mobile v1.0.0 (27)</Text>
       </ScrollView>
 
       {/* Clear Cache Confirmation BottomSheet */}

@@ -1,74 +1,111 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Bell, Sun, Vibrate } from '@/src/components/icons';
 import { Toggle } from '@/src/components/Toggle';
+import {
+  preferencesService,
+  UserPreferences,
+} from '@/src/services/preferencesService';
 import { colors, fonts, fontSizes, radii, spacing } from '@/src/theme/tokens';
 
-export const ProfilePreferencesGroup = React.memo(function ProfilePreferencesGroup(): React.ReactElement {
-  const [purchaseAlerts, setPurchaseAlerts] = useState(true);
-  const [haptics, setHaptics] = useState(true);
-  const [keepAwake, setKeepAwake] = useState(true);
+export const ProfilePreferencesGroup = React.memo(
+  function ProfilePreferencesGroup(): React.ReactElement {
+    const [prefs, setPrefs] = useState<UserPreferences>(() =>
+      preferencesService.getPreferencesSync()
+    );
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Preferences</Text>
+    useEffect(() => {
+      void preferencesService.getPreferences().then(setPrefs);
+      const unsubscribe = preferencesService.subscribe(setPrefs);
+      return unsubscribe;
+    }, []);
 
-      <View style={styles.groupCard}>
-        {/* Row 1: Purchase alerts */}
-        <View style={styles.row}>
-          <View style={styles.iconTile}>
-            <Bell size={20} color={colors.accent} />
-          </View>
-          <View style={styles.labelCol}>
-            <Text style={styles.title}>Purchase alerts</Text>
-            <Text style={styles.subtext}>Notify me when a card is bought</Text>
-          </View>
-          <Toggle
-            value={purchaseAlerts}
-            onValueChange={setPurchaseAlerts}
-            accessibilityLabel="Purchase alerts"
-          />
-        </View>
+    const handleTogglePurchaseAlerts = useCallback((value: boolean) => {
+      setPrefs((prev) => ({ ...prev, purchaseAlerts: value }));
+      void preferencesService.setPreferences({ purchaseAlerts: value });
+      if (preferencesService.getPreferencesSync().haptics) {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    }, []);
 
-        <View style={styles.divider} />
+    const handleToggleHaptics = useCallback((value: boolean) => {
+      setPrefs((prev) => ({ ...prev, haptics: value }));
+      void preferencesService.setPreferences({ haptics: value });
+      if (value) {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    }, []);
 
-        {/* Row 2: Haptics */}
-        <View style={styles.row}>
-          <View style={styles.iconTile}>
-            <Vibrate size={20} color={colors.accent} />
-          </View>
-          <View style={styles.labelCol}>
-            <Text style={styles.title}>Haptics</Text>
-            <Text style={styles.subtext}>Vibrate on rare snipes</Text>
-          </View>
-          <Toggle
-            value={haptics}
-            onValueChange={setHaptics}
-            accessibilityLabel="Haptics"
-          />
-        </View>
+    const handleToggleKeepAwake = useCallback((value: boolean) => {
+      setPrefs((prev) => ({ ...prev, keepAwake: value }));
+      void preferencesService.setPreferences({ keepAwake: value });
+      if (preferencesService.getPreferencesSync().haptics) {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    }, []);
 
-        <View style={styles.divider} />
+    return (
+      <View style={styles.container}>
+        <Text style={styles.sectionTitle}>Preferences</Text>
 
-        {/* Row 3: Keep screen awake */}
-        <View style={styles.row}>
-          <View style={styles.iconTile}>
-            <Sun size={20} color={colors.accent} />
+        <View style={styles.groupCard}>
+          {/* Row 1: Purchase alerts */}
+          <View style={styles.row}>
+            <View style={styles.iconTile}>
+              <Bell size={20} color={colors.accent} />
+            </View>
+            <View style={styles.labelCol}>
+              <Text style={styles.title}>Purchase alerts</Text>
+              <Text style={styles.subtext}>Notify me when a card is bought</Text>
+            </View>
+            <Toggle
+              value={prefs.purchaseAlerts}
+              onValueChange={handleTogglePurchaseAlerts}
+              accessibilityLabel="Purchase alerts"
+            />
           </View>
-          <View style={styles.labelCol}>
-            <Text style={styles.title}>Keep screen awake</Text>
-            <Text style={styles.subtext}>While the bot is sniping</Text>
+
+          <View style={styles.divider} />
+
+          {/* Row 2: Haptics */}
+          <View style={styles.row}>
+            <View style={styles.iconTile}>
+              <Vibrate size={20} color={colors.accent} />
+            </View>
+            <View style={styles.labelCol}>
+              <Text style={styles.title}>Haptics</Text>
+              <Text style={styles.subtext}>Vibrate on rare snipes</Text>
+            </View>
+            <Toggle
+              value={prefs.haptics}
+              onValueChange={handleToggleHaptics}
+              accessibilityLabel="Haptics"
+            />
           </View>
-          <Toggle
-            value={keepAwake}
-            onValueChange={setKeepAwake}
-            accessibilityLabel="Keep screen awake"
-          />
+
+          <View style={styles.divider} />
+
+          {/* Row 3: Keep screen awake */}
+          <View style={styles.row}>
+            <View style={styles.iconTile}>
+              <Sun size={20} color={colors.accent} />
+            </View>
+            <View style={styles.labelCol}>
+              <Text style={styles.title}>Keep screen awake</Text>
+              <Text style={styles.subtext}>While the bot is sniping</Text>
+            </View>
+            <Toggle
+              value={prefs.keepAwake}
+              onValueChange={handleToggleKeepAwake}
+              accessibilityLabel="Keep screen awake"
+            />
+          </View>
         </View>
       </View>
-    </View>
-  );
-});
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   container: {

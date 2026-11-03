@@ -201,6 +201,20 @@ export const authService = {
   },
 
   async signOut(): Promise<void> {
+    const token = activeSession?.token;
+    if (token) {
+      try {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (err) {
+        console.warn('Backend logout request failed:', err);
+      }
+    }
     activeSession = null;
     await AsyncStorage.removeItem(SESSION_STORAGE_KEY);
   },

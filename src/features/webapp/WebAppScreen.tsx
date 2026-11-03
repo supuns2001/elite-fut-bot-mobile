@@ -8,6 +8,7 @@ import { colors, fonts, fontSizes, radii, spacing } from '@/src/theme/tokens';
 import { WebAppTopBar } from '@/src/features/webapp/WebAppTopBar';
 import { SnipingControlsSheet } from '@/src/features/webapp/SnipingControlsSheet';
 import { ActivityLogSheet } from '@/src/features/webapp/ActivityLogSheet';
+import { FloatingEdgeBotDock } from '@/src/features/webapp/FloatingEdgeBotDock';
 import { WebAppToast } from '@/src/features/webapp/WebAppToast';
 import {
   EA_WEBAPP_URL,
@@ -22,6 +23,10 @@ import {
   FUTBIN_BASE_URL,
 } from '@/src/features/webapp/bot/useFutbinScraper';
 import { authService } from '@/src/services/authService';
+import {
+  cacheService,
+  INJECTED_CLEAR_STORAGE_SCRIPT,
+} from '@/src/services/cacheService';
 import { API_BASE_URL } from '@/src/config/api';
 
 export function WebAppScreen(): React.ReactElement {
@@ -29,6 +34,22 @@ export function WebAppScreen(): React.ReactElement {
   const webViewRef = useRef<WebView>(null);
   const controlsSheetRef = useRef<BottomSheetModal>(null);
   const logSheetRef = useRef<BottomSheetModal>(null);
+
+  const [sessionEpoch, setSessionEpoch] = useState<number>(() =>
+    cacheService.getSessionEpoch()
+  );
+
+  useEffect(() => {
+    const unsubscribe = cacheService.subscribe((newEpoch) => {
+      setSessionEpoch(newEpoch);
+      try {
+        webViewRef.current?.clearCache?.(true);
+      } catch (e) {
+        // Safe fallback
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   const [player, setPlayer] = useState<BotPlayerInfoPayload | null>(null);
   const [backendPrices, setBackendPrices] = useState<{ ps: number; pc: number } | null>(null);
@@ -219,9 +240,13 @@ export function WebAppScreen(): React.ReactElement {
       {/* Main Embedded EA Web App WebView */}
       <View style={[styles.webViewContainer, webViewStyle]}>
         <WebView
+          key={`ea-webapp-${sessionEpoch}`}
           ref={webViewRef}
           source={{ uri: EA_WEBAPP_URL }}
           userAgent={EA_CHROME_USER_AGENT}
+          injectedJavaScriptBeforeContentLoaded={
+            sessionEpoch > 1 ? INJECTED_CLEAR_STORAGE_SCRIPT : undefined
+          }
           injectedJavaScript={INJECTED_VIEWPORT_SCRIPT}
           javaScriptEnabled
           domStorageEnabled
@@ -258,32 +283,14 @@ export function WebAppScreen(): React.ReactElement {
         />
       </View>
 
-      {/* Floating Bot Action Buttons */}
-      <View style={[styles.floatingActions, floatingActionsStyle]}>
-        <Pressable
-          onPress={handleListAll}
-          disabled={isListing}
-          accessibilityRole="button"
-          accessibilityLabel="List all cards"
-          style={styles.listAllButton}
-        >
-          <Text style={styles.listAllText}>{isListing ? 'Listing…' : 'List all'}</Text>
-        </Pressable>
-
-        <Pressable
-          onPress={handleOpenControls}
-          accessibilityRole="button"
-          accessibilityLabel="Open sniping controls"
-          style={styles.controlsButton}
-        >
-          <Image
-            source={require('@/assets/logo.png')}
-            style={styles.controlsLogo}
-            contentFit="contain"
-          />
-          <Text style={styles.controlsText}>Controls</Text>
-        </Pressable>
-      </View>
+      {/* Collapsible Edge-Docked Floating Bot Controls (Swipe / Tap to reveal) */}
+      <FloatingEdgeBotDock
+        bottomInset={insets.bottom}
+        isRunning={bot.isRunning}
+        isListing={isListing}
+        onListAll={handleListAll}
+        onOpenControls={handleOpenControls}
+      />
 
       <SnipingControlsSheet
         ref={controlsSheetRef}

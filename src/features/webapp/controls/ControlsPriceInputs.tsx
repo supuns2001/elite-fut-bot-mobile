@@ -10,6 +10,10 @@ interface ControlsPriceInputsProps {
   onMaxPriceChange: (val: string) => void;
   cardRating: string;
   onCardRatingChange: (val: string) => void;
+  minRating: string;
+  onMinRatingChange: (val: string) => void;
+  maxRating: string;
+  onMaxRatingChange: (val: string) => void;
   exactRating: boolean;
   onExactRatingChange: (val: boolean) => void;
   needPrice: boolean;
@@ -23,6 +27,10 @@ export const ControlsPriceInputs = React.memo(function ControlsPriceInputs({
   onMaxPriceChange,
   cardRating,
   onCardRatingChange,
+  minRating,
+  onMinRatingChange,
+  maxRating,
+  onMaxRatingChange,
   exactRating,
   onExactRatingChange,
   needPrice,
@@ -57,7 +65,7 @@ export const ControlsPriceInputs = React.memo(function ControlsPriceInputs({
               <TextInput
                 value={maxPrice}
                 onChangeText={(t) => onMaxPriceChange(t.replace(/[^0-9]/g, ''))}
-                placeholder="8000"
+                placeholder="Max Price"
                 placeholderTextColor={colors.textPlaceholder}
                 keyboardType="numeric"
                 style={styles.numericInput}
@@ -81,23 +89,63 @@ export const ControlsPriceInputs = React.memo(function ControlsPriceInputs({
           </View>
         </View>
 
-        <View style={styles.inputBox}>
-          <Text style={styles.starSymbol}>★</Text>
-          <TextInput
-            value={cardRating}
-            onChangeText={(t) => onCardRatingChange(t.replace(/[^0-9]/g, ''))}
-            placeholder="Card Rating"
-            placeholderTextColor={colors.textPlaceholder}
-            keyboardType="numeric"
-            maxLength={2}
-            style={styles.numericInput}
-          />
-          <Text style={styles.inputUnit}>OVR</Text>
-        </View>
+        {exactRating ? (
+          /* Single Exact Rating Input */
+          <View style={styles.inputBox}>
+            <Text style={styles.starSymbol}>★</Text>
+            <TextInput
+              value={cardRating}
+              onChangeText={(t) => onCardRatingChange(t.replace(/[^0-9]/g, ''))}
+              placeholder="Card Rating"
+              placeholderTextColor={colors.textPlaceholder}
+              keyboardType="numeric"
+              maxLength={2}
+              style={styles.numericInput}
+            />
+            <Text style={styles.inputUnit}>OVR</Text>
+          </View>
+        ) : (
+          /* Min Rating & Max Rating Range Inputs (Side-by-side) */
+          <View style={styles.row}>
+            {/* Min Rating */}
+            <View style={styles.halfCol}>
+              <View style={styles.inputBox}>
+                <Text style={styles.starSymbol}>★</Text>
+                <TextInput
+                  value={minRating}
+                  onChangeText={(t) => onMinRatingChange(t.replace(/[^0-9]/g, ''))}
+                  placeholder="Min Rating"
+                  placeholderTextColor={colors.textPlaceholder}
+                  keyboardType="numeric"
+                  maxLength={2}
+                  style={styles.numericInput}
+                />
+                <Text style={styles.inputUnit}>MIN</Text>
+              </View>
+            </View>
+
+            {/* Max Rating */}
+            <View style={styles.halfCol}>
+              <View style={styles.inputBox}>
+                <Text style={styles.starSymbol}>★</Text>
+                <TextInput
+                  value={maxRating}
+                  onChangeText={(t) => onMaxRatingChange(t.replace(/[^0-9]/g, ''))}
+                  placeholder="Max Rating"
+                  placeholderTextColor={colors.textPlaceholder}
+                  keyboardType="numeric"
+                  maxLength={2}
+                  style={styles.numericInput}
+                />
+                <Text style={styles.inputUnit}>MAX</Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         {rpmText ? (
           <View style={styles.rpmRow}>
-            <Text style={styles.rpmCheck}>✔</Text>
+            <Text style={styles.rpmSpeedometer}>⏱</Text>
             <Text style={styles.rpmText}>{rpmText}</Text>
           </View>
         ) : null}
@@ -150,7 +198,7 @@ const styles = StyleSheet.create({
   starSymbol: {
     fontFamily: fonts.bold,
     fontSize: fontSizes.base,
-    color: '#FFD700',
+    color: '#CBFF00',
   },
   numericInput: {
     flex: 1,
@@ -192,9 +240,9 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     marginTop: spacing.xs,
   },
-  rpmCheck: {
+  rpmSpeedometer: {
     color: colors.accent,
-    fontSize: 12,
+    fontSize: 13,
   },
   rpmText: {
     fontFamily: fonts.medium,

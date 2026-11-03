@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import {
-  Activity,
   ArrowUpRight,
   ChevronRight,
   FileText,
   Globe,
-  Lock,
+  Shield,
+  Terminal,
   Trash,
 } from '@/src/components/icons';
 import { colors, fonts, fontSizes, radii, spacing } from '@/src/theme/tokens';
@@ -45,7 +45,7 @@ export const ProfileMoreGroup = React.memo(function ProfileMoreGroup({
           style={styles.row}
         >
           <View style={styles.iconTile}>
-            <Activity size={20} color="#FFFFFF" />
+            <Terminal size={20} color="#FFFFFF" strokeWidth={1.9} />
           </View>
           <Text style={styles.title}>Activity log</Text>
           <ChevronRight size={18} color={colors.textSecondary} />
@@ -109,7 +109,7 @@ export const ProfileMoreGroup = React.memo(function ProfileMoreGroup({
           style={styles.row}
         >
           <View style={styles.iconTile}>
-            <Lock size={20} color="#FFFFFF" />
+            <Shield size={20} color="#FFFFFF" strokeWidth={1.9} />
           </View>
           <Text style={styles.title}>Privacy Policy</Text>
           <ArrowUpRight size={18} color={colors.textSecondary} />

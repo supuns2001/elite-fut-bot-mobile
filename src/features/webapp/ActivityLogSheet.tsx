@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useMemo, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   BottomSheetBackdrop,
@@ -11,10 +11,10 @@ import { Close } from '@/src/components/icons';
 import { Toggle } from '@/src/components/Toggle';
 import {
   ActivityLogItem,
-  INITIAL_LOG_ITEMS,
   LogTag,
   TAG_COLORS,
 } from '@/src/services/botService';
+import { activityLogService } from '@/src/services/activityLogService';
 import type { SniperLogEntry } from '@/src/features/webapp/bot/useSniperBot';
 import { ActivityLogRow } from '@/src/features/webapp/ActivityLogRow';
 import { colors, fonts, fontSizes, radii, spacing } from '@/src/theme/tokens';
@@ -28,52 +28,64 @@ export interface ActivityLogSheetProps {
 
 export const ActivityLogSheet = forwardRef<BottomSheetModal, ActivityLogSheetProps>(
   function ActivityLogSheet({ isLive, logs: propLogs, onClear, onClose }, ref): React.ReactElement {
-    const [localLogs, setLocalLogs] = useState<ActivityLogItem[]>(INITIAL_LOG_ITEMS);
+    const [serviceLogs, setServiceLogs] = useState<ActivityLogItem[]>(() =>
+      activityLogService.getLogs()
+    );
     const [autoScroll, setAutoScroll] = useState(true);
 
-    const displayLogs = useMemo<ActivityLogItem[]>(() => {
-      if (!propLogs) return localLogs;
-      return propLogs.map((entry) => {
-        const timeStr =
-          entry.time instanceof Date
-            ? entry.time.toTimeString().split(' ')[0]
-            : String(entry.time);
-
-        let tag: LogTag = 'INFO';
-        const msg = entry.message.toLowerCase();
-        if (
-          entry.detail?.kind === 'search' ||
-          msg.includes('search') ||
-          msg.includes('criteria')
-        ) {
-          tag = 'SEARCH';
-        } else if (
-          entry.detail?.kind === 'snipe' ||
-          entry.detail?.kind === 'buy' ||
-          msg.includes('bought') ||
-          entry.level === 'success'
-        ) {
-          tag = 'BOUGHT';
-        } else if (msg.includes('list')) {
-          tag = 'LISTED';
-        } else if (
-          msg.includes('pause') ||
-          msg.includes('sleep') ||
-          entry.level === 'warning' ||
-          entry.level === 'error'
-        ) {
-          tag = 'PAUSE';
-        }
-
-        return {
-          id: entry.id,
-          time: timeStr,
-          tag,
-          msg: entry.message,
-          color: TAG_COLORS[tag] || TAG_COLORS.INFO,
-        };
+    useEffect(() => {
+      const unsubscribe = activityLogService.subscribe(setServiceLogs);
+      void activityLogService.fetchHistoricalPurchases().then((logs) => {
+        if (logs.length > 0) setServiceLogs(logs);
       });
-    }, [propLogs, localLogs]);
+      return unsubscribe;
+    }, []);
+
+    const displayLogs = useMemo<ActivityLogItem[]>(() => {
+      if (propLogs && propLogs.length > 0) {
+        return propLogs.map((entry) => {
+          const timeStr =
+            entry.time instanceof Date
+              ? entry.time.toTimeString().split(' ')[0]
+              : String(entry.time);
+
+          let tag: LogTag = 'INFO';
+          const msg = entry.message.toLowerCase();
+          if (
+            entry.detail?.kind === 'search' ||
+            msg.includes('search') ||
+            msg.includes('criteria')
+          ) {
+            tag = 'SEARCH';
+          } else if (
+            entry.detail?.kind === 'snipe' ||
+            entry.detail?.kind === 'buy' ||
+            msg.includes('bought') ||
+            entry.level === 'success'
+          ) {
+            tag = 'BOUGHT';
+          } else if (msg.includes('list')) {
+            tag = 'LISTED';
+          } else if (
+            msg.includes('pause') ||
+            msg.includes('sleep') ||
+            entry.level === 'warning' ||
+            entry.level === 'error'
+          ) {
+            tag = 'PAUSE';
+          }
+
+          return {
+            id: entry.id,
+            time: timeStr,
+            tag,
+            msg: entry.message,
+            color: TAG_COLORS[tag] || TAG_COLORS.INFO,
+          };
+        });
+      }
+      return serviceLogs;
+    }, [propLogs, serviceLogs]);
 
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) => (
@@ -90,9 +102,9 @@ export const ActivityLogSheet = forwardRef<BottomSheetModal, ActivityLogSheetPro
     const handleClear = useCallback(() => {
       if (onClear) {
         onClear();
-      } else {
-        setLocalLogs([]);
       }
+      activityLogService.clearLogs();
+      setServiceLogs([]);
     }, [onClear]);
 
     const renderLogItem: ListRenderItem<ActivityLogItem> = useCallback(

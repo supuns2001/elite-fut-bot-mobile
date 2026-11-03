@@ -236,3 +236,28 @@ authRouter.get('/me', authenticate, async (req: AuthRequest, res: Response): Pro
     },
   });
 });
+
+/**
+ * POST /api/auth/logout
+ * Signs out the user, invalidates active sessions, and updates bot state
+ */
+authRouter.post('/logout', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const user = req.user!;
+    user.botStatus = 'stopped';
+    user.runningSince = null;
+    user.lastSeenAt = new Date();
+    if (Array.isArray(user.refreshTokens)) {
+      user.refreshTokens = [];
+    }
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Logged out successfully',
+    });
+  } catch (error: any) {
+    console.error('❌ Logout error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error during logout' });
+  }
+});
