@@ -16,6 +16,7 @@ import { cacheService } from '@/src/services/cacheService';
 import { activityLogService } from '@/src/services/activityLogService';
 import { colors, fonts, fontSizes, radii, spacing } from '@/src/theme/tokens';
 import { ProfileAccountCard } from '@/src/features/profile/ProfileAccountCard';
+import { ProfileReferralCard } from '@/src/features/profile/ProfileReferralCard';
 import { ProfilePreferencesGroup } from '@/src/features/profile/ProfilePreferencesGroup';
 import { ProfileMoreGroup } from '@/src/features/profile/ProfileMoreGroup';
 import { ProfileClearCacheSheet } from '@/src/features/profile/ProfileClearCacheSheet';
@@ -116,7 +117,10 @@ export default function ProfileTabRoute(): React.ReactElement {
           onRefreshSubscription={handleRefreshSubscription}
         />
 
-        {/* 2. Preferences Group */}
+        {/* 2. Referral Rewards Card */}
+        <ProfileReferralCard referralCode={session?.referralCode} />
+
+        {/* 3. Preferences Group */}
         <ProfilePreferencesGroup />
 
         {/* 3. More Group */}
